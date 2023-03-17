@@ -1,4 +1,4 @@
-package com.olekhv.job.search.user;
+package com.olekhv.job.search.auth.userCredential;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
