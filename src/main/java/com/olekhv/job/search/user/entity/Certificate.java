@@ -1,4 +1,4 @@
-package com.olekhv.job.search.user;
+package com.olekhv.job.search.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.olekhv.job.search.user;
+package com.olekhv.job.search.user.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,15 +11,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "language")
-public class Language {
+@Table(name = "skill")
+public class Skill {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
-    @Column(name = "name", length = 50, nullable = false)
+    @Column(name = "name", length = 100, nullable = false)
     private String name;
-    @Column(name = "proficiency", length = 40, nullable = false)
-    @Enumerated(EnumType.STRING)
-    private LanguageProficiency proficiency;
 }
