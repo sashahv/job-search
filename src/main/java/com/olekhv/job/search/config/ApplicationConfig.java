@@ -1,6 +1,6 @@
 package com.olekhv.job.search.config;
 
-import com.olekhv.job.search.user.UserCredentialRepository;
+import com.olekhv.job.search.auth.userCredential.UserCredentialRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
