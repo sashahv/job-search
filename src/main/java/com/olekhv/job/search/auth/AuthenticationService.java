@@ -1,8 +1,12 @@
 package com.olekhv.job.search.auth;
 
+import com.olekhv.job.search.auth.userCredential.UserCredential;
+import com.olekhv.job.search.auth.userCredential.UserCredentialRepository;
 import com.olekhv.job.search.config.JwtService;
 import com.olekhv.job.search.exception.UserAlreadyExistsException;
-import com.olekhv.job.search.user.*;
+import com.olekhv.job.search.user.entity.User;
+import com.olekhv.job.search.user.entity.UserRole;
+import com.olekhv.job.search.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,7 +40,7 @@ public class AuthenticationService {
                 .phoneNumber(request.getPhoneNumber())
                 .city(request.getCity())
                 .country(request.getCountry())
-                .dateOfCreation(LocalDate.now())
+                .createdAt(LocalDate.now())
                 .build();
         userRepository.save(user);
 
