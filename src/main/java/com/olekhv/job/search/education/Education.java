@@ -1,4 +1,4 @@
-package com.olekhv.job.search.user.entity;
+package com.olekhv.job.search.education;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,10 +25,10 @@ public class Education {
     private String degree;
     @Column(name = "field_of_study", length = 100, nullable = false)
     private String fieldOfStudy;
-    @Column(name = "start_date")
-    private LocalDate startDate;
-    @Column(name = "graduation_date")
-    private LocalDate graduationDate;
+    @Column(name = "from_date")
+    private LocalDate fromDate;
+    @Column(name = "to_date")
+    private LocalDate toDate;
     @Column(name = "avg_grade", length = 10)
     private Double averageGrade;
     @Column(name = "additional_info", length = 200)
