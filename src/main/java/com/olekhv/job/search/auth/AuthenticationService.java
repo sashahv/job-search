@@ -1,12 +1,14 @@
 package com.olekhv.job.search.auth;
 
+import com.olekhv.job.search.auth.userCredential.PasswordModel;
 import com.olekhv.job.search.auth.userCredential.UserCredential;
 import com.olekhv.job.search.auth.userCredential.UserCredentialRepository;
 import com.olekhv.job.search.config.JwtService;
+import com.olekhv.job.search.exception.IncorrectPasswordException;
 import com.olekhv.job.search.exception.UserAlreadyExistsException;
-import com.olekhv.job.search.user.entity.User;
-import com.olekhv.job.search.user.entity.UserRole;
-import com.olekhv.job.search.user.UserRepository;
+import com.olekhv.job.search.entity.user.User;
+import com.olekhv.job.search.entity.user.UserRole;
+import com.olekhv.job.search.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -38,9 +40,12 @@ public class AuthenticationService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .phoneNumber(request.getPhoneNumber())
+                .birthDate(request.getBirthDate())
                 .city(request.getCity())
                 .country(request.getCountry())
                 .createdAt(LocalDate.now())
+                .currentPosition(request.getCurrentPosition())
+                .contactEmail(request.getContactEmail()!=null ? request.getContactEmail() : request.getEmail())
                 .build();
         userRepository.save(user);
 
@@ -77,5 +82,34 @@ public class AuthenticationService {
         return AuthenticationResponse.builder()
                 .token(token)
                 .build();
+    }
+
+    public void changePassword(PasswordModel passwordModel,
+                               UserCredential userCredential) {
+        String oldPassword = passwordModel.getOldPassword();
+        String newPassword = passwordModel.getNewPassword();
+        String passwordConfirmation = passwordModel.getPasswordConfirmation();
+
+        String presentPassword = userCredential.getPassword();
+
+
+        if (!isOldPasswordValid(oldPassword, presentPassword)) {
+            throw new IncorrectPasswordException("Old password is not correct");
+        }
+
+        if (!isNewPasswordConfirmed(newPassword, passwordConfirmation)){
+            throw new IncorrectPasswordException("New password is not confirmed");
+        }
+
+        userCredential.setPassword(passwordEncoder.encode(newPassword));
+        userCredentialRepository.save(userCredential);
+    }
+
+    private boolean isOldPasswordValid(String providedPassword, String presentPassword) {
+        return passwordEncoder.matches(providedPassword, presentPassword);
+    }
+
+    private boolean isNewPasswordConfirmed(String newPassword, String passwordConfirmation) {
+        return newPassword.equals(passwordConfirmation);
     }
 }
