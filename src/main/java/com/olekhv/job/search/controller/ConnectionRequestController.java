@@ -34,9 +34,9 @@ public class ConnectionRequestController {
         return ResponseEntity.ok(connectionRequestService.acceptConnectionRequest(userEmail, userCredential));
     }
 
-//    @PostMapping("/requests/decline")
-//    public ResponseEntity<List<ConnectionRequest>> declineConnectionRequest(@RequestParam("id") Long id,
-//                                                                            @AuthenticationPrincipal UserCredential userCredential){
-//        return ResponseEntity.ok(connectionRequestService.declineConnectionRequest(id, userCredential));
-//    }
+    @PostMapping("/requests/decline")
+    public ResponseEntity<List<ConnectionRequest>> declineConnectionRequest(@RequestParam("email") String userEmail,
+                                                                            @AuthenticationPrincipal UserCredential userCredential){
+        return ResponseEntity.ok(connectionRequestService.declineConnectionRequest(userEmail, userCredential));
+    }
 }

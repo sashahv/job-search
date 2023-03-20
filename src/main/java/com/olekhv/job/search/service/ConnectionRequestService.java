@@ -78,20 +78,21 @@ public class ConnectionRequestService {
         return connectionRequestRepository.findByToUser(authUser).get();
     }
 
-//    public List<ConnectionRequest> declineConnectionRequest(Long connectionRequestId,
-//                                               UserCredential userCredential){
-//        User authUser = userCredential.getUser();
-//        ConnectionRequest connectionRequest = connectionRequestRepository.findById(connectionRequestId).orElseThrow(
-//                () -> new NotFoundException("Connection request with id " + connectionRequestId + " not found")
-//        );
-//
-//        User userSentRequest = connectionRequest.getUserSentRequest();
-//
-//        userSentRequest.getConnectionRequests().remove(connectionRequest);
-//        userRepository.save(userSentRequest);
-//
-//        connectionRequestRepository.delete(connectionRequest);
-//        userRepository.save(userSentRequest);
-//        return authUser.getConnectionRequests();
-//    }
+    public List<ConnectionRequest> declineConnectionRequest(String userEmail,
+                                               UserCredential userCredential){
+        User authUser = userCredential.getUser();
+
+        UserCredential sentRequestUserCredential = userCredentialRepository.findByEmail(userEmail).orElseThrow(
+                () -> new NotFoundException("User with email " + userEmail + " not found")
+        );
+
+        User sentRequestUser = sentRequestUserCredential.getUser();
+
+        ConnectionRequest connectionRequest = connectionRequestRepository.findByFromUserAndToUser(sentRequestUser, authUser).orElseThrow(
+                () -> new NotFoundException("Connection request not found")
+        );
+
+        connectionRequestRepository.delete(connectionRequest);
+        return connectionRequestRepository.findByToUser(authUser).get();
+    }
 }
