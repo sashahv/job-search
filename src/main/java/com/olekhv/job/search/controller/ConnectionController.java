@@ -26,7 +26,7 @@ public class ConnectionController {
 
     @PostMapping("/add")
     public ResponseEntity<ConnectionRequest> sendConnectionRequest(@RequestParam("email") String userEmail,
-                                                      @AuthenticationPrincipal UserCredential userCredential){
+                                                                   @AuthenticationPrincipal UserCredential userCredential){
         return ResponseEntity.ok(connectionRequestService.sendConnectionRequestToUser(userEmail, userCredential));
     }
 

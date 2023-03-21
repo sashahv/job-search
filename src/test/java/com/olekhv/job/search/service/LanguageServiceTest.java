@@ -49,9 +49,12 @@ class LanguageServiceTest {
 
     @Test
     void should_add_language_to_user(){
+        // Given
 
+        // When
         languageService.addLanguageToUser(userLanguage, userCredential);
 
+        // Then
         verify(userRepository, times(1)).save(user);
         assertThat(user.getLanguages().contains(userLanguage)).isTrue();
     }

@@ -42,8 +42,12 @@ class EducationServiceTest {
 
     @Test
     public void should_add_new_education_for_user () {
+        // Given
+
+        // When
         educationService.addNewEducation(education, userCredential);
 
+        // Then
         verify(userRepository, times(1)).save(user);
         assertThat(user.getEducations().contains(education)).isTrue();
     }

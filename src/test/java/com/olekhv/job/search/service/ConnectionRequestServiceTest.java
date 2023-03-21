@@ -5,6 +5,8 @@ import com.olekhv.job.search.auth.userCredential.UserCredentialRepository;
 import com.olekhv.job.search.entity.connectionRequest.ConnectionRequestRepository;
 import com.olekhv.job.search.entity.user.User;
 import com.olekhv.job.search.entity.connectionRequest.ConnectionRequest;
+import com.olekhv.job.search.exception.AlreadyExistsException;
+import com.olekhv.job.search.exception.NotFoundException;
 import com.olekhv.job.search.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +22,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -61,6 +64,13 @@ class ConnectionRequestServiceTest {
     }
 
     @Test
+    void should_throw_exception_if_connection_request_already_exists(){
+        when(connectionRequestRepository.findByFromUserAndToUser(any(User.class), any(User.class))).thenReturn(Optional.of(connectionRequest));
+        assertThrows(AlreadyExistsException.class, () ->
+                connectionRequestService.sendConnectionRequestToUser("testUser@gmail.com", userCredential));
+    }
+
+    @Test
     void should_accept_connection_request(){
         // Given
         when(connectionRequestRepository.findByToUser(user)).thenReturn(Optional.of(List.of(connectionRequest)));
@@ -90,5 +100,13 @@ class ConnectionRequestServiceTest {
         verify(connectionRequestRepository,times(1)).delete(connectionRequest);
         assertEquals(0, user.getConnections().size());
         assertEquals(0, requestedUser.getConnections().size());
+    }
+
+    @Test
+    void should_throw_exception_of_connection_request_does_not_exist(){
+        when(connectionRequestRepository.findByFromUserAndToUser(any(User.class), any(User.class))).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class, () ->
+                connectionRequestService.declineConnectionRequest("testUser@gmail.com", userCredential));
     }
 }

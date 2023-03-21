@@ -29,6 +29,10 @@ public class Company {
     private String address;
     @Column(name = "email", length = 50, nullable = false)
     private String email;
+    @ManyToOne(cascade = CascadeType.ALL)
+    private User owner;
+    @ManyToMany(cascade = CascadeType.ALL)
+    private List<User> heads = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<User> hiringTeam = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)

@@ -3,6 +3,7 @@ package com.olekhv.job.search.service;
 import com.olekhv.job.search.auth.userCredential.UserCredential;
 import com.olekhv.job.search.auth.userCredential.UserCredentialRepository;
 import com.olekhv.job.search.entity.user.User;
+import com.olekhv.job.search.exception.NotFoundException;
 import com.olekhv.job.search.repository.UserRepository;
 import com.olekhv.job.search.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,7 @@ import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -73,5 +75,11 @@ class UserServiceTest {
         verify(userRepository,times(2)).save(any(User.class));
         assertEquals(0, user.getConnections().size());
         assertEquals(0, connectedUser.getConnections().size());
+    }
+
+    @Test
+    void should_throw_exception_if_connection_not_exists(){
+        assertThrows(NotFoundException.class, () ->
+                userService.removeConnectionWithOtherUser("testEmail@gmail.com", userCredential));
     }
 }
