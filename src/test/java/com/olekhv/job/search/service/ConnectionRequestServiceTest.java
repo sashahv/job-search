@@ -8,6 +8,7 @@ import com.olekhv.job.search.entity.connectionRequest.ConnectionRequest;
 import com.olekhv.job.search.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -17,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
@@ -46,13 +48,16 @@ class ConnectionRequestServiceTest {
     @Test
     void should_send_connection_request(){
         // Given
-        when(connectionRequestRepository.findByFromUserAndToUser(user, requestedUser)).thenReturn(Optional.empty());
 
         // When
         connectionRequestService.sendConnectionRequestToUser("testUser@gmail.com", userCredential);
 
         // Then
-        verify(connectionRequestRepository, times(1)).save(connectionRequest);
+        ArgumentCaptor<ConnectionRequest> captor = ArgumentCaptor.forClass(ConnectionRequest.class);
+        verify(connectionRequestRepository, times(1)).save(captor.capture());
+        ConnectionRequest savedRequest = captor.getValue();
+        assertThat(savedRequest.getFromUser()).isEqualTo(user);
+        assertThat(savedRequest.getToUser()).isEqualTo(requestedUser);
     }
 
     @Test

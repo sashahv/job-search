@@ -11,8 +11,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
@@ -34,23 +37,41 @@ class UserServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(user.getFirstName()).thenReturn("Test");
-        when(user.getLastName()).thenReturn("User");
-
-        when(userCredential.getEmail()).thenReturn("testemail@gmail.com");
         when(userCredential.getUser()).thenReturn(user);
-
-        when(userCredentialRepository.findByEmail("testemail@gmail.com")).thenReturn(Optional.of(userCredential));
+        when(userCredentialRepository.findByEmail("testEmail@gmail.com")).thenReturn(Optional.of(userCredential));
     }
 
     @Test
     void should_edit_user_information() {
+        // Given
         User editedUser = new User();
         editedUser.setFirstName("ChangedName");
 
+        // When
         userService.editInformation(editedUser, userCredential);
 
+        // Then
         verify(user, times(1)).setFirstName("ChangedName");
         verify(userRepository, times(1)).save(user);
+    }
+
+    @Test
+    void should_remove_connection_with_other_user(){
+        // Given
+        UserCredential connectedUserCredential = mock(UserCredential.class);
+        User connectedUser = mock(User.class);
+        when(connectedUserCredential.getUser()).thenReturn(connectedUser);
+        when(user.getConnections()).thenReturn(new ArrayList<>(Collections.singletonList(connectedUser)));
+        when(connectedUser.getConnections()).thenReturn(new ArrayList<>(Collections.singletonList(user)));
+        when(userCredential.getUser()).thenReturn(user);
+        when(userCredentialRepository.findByEmail("testConnectedEmail@gmail.com")).thenReturn(Optional.of(connectedUserCredential));
+
+        // When
+        userService.removeConnectionWithOtherUser("testConnectedEmail@gmail.com", userCredential);
+
+        // Then
+        verify(userRepository,times(2)).save(any(User.class));
+        assertEquals(0, user.getConnections().size());
+        assertEquals(0, connectedUser.getConnections().size());
     }
 }

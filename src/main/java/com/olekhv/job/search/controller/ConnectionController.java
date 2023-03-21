@@ -4,6 +4,7 @@ import com.olekhv.job.search.auth.userCredential.UserCredential;
 import com.olekhv.job.search.entity.connectionRequest.ConnectionRequest;
 import com.olekhv.job.search.entity.user.User;
 import com.olekhv.job.search.service.ConnectionRequestService;
+import com.olekhv.job.search.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,8 +15,9 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/user/connections")
-public class ConnectionRequestController {
+public class ConnectionController {
     private final ConnectionRequestService connectionRequestService;
+    private final UserService userService;
 
     @GetMapping("/all")
     public ResponseEntity<List<ConnectionRequest>> listAllConnectionRequests(@AuthenticationPrincipal UserCredential userCredential){
@@ -38,5 +40,11 @@ public class ConnectionRequestController {
     public ResponseEntity<List<ConnectionRequest>> declineConnectionRequest(@RequestParam("email") String userEmail,
                                                                             @AuthenticationPrincipal UserCredential userCredential){
         return ResponseEntity.ok(connectionRequestService.declineConnectionRequest(userEmail, userCredential));
+    }
+
+    @PostMapping("/remove")
+    public ResponseEntity<List<User>> removeConnection(@RequestParam("email") String userEmail,
+                                                       @AuthenticationPrincipal UserCredential userCredential){
+        return ResponseEntity.ok(userService.removeConnectionWithOtherUser(userEmail, userCredential));
     }
 }
