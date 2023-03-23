@@ -8,10 +8,7 @@ import com.olekhv.job.search.entity.language.UserLanguage;
 import com.olekhv.job.search.entity.skill.Skill;
 import com.olekhv.job.search.entity.connectionRequest.ConnectionRequest;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -20,7 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -65,6 +64,27 @@ public class User {
     private List<UserLanguage> languages = new ArrayList<>();
 
     @JsonBackReference
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.PERSIST}, fetch = FetchType.EAGER)
     private List<User> connections = new ArrayList<>();
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id=" + id +
+                ", createdAt=" + createdAt +
+                ", firstName='" + firstName + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", currentPosition='" + currentPosition + '\'' +
+                ", contactEmail='" + contactEmail + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", birthDate=" + birthDate +
+                ", country='" + country + '\'' +
+                ", city='" + city + '\'' +
+                ", workExperiences=" + workExperiences +
+                ", educations=" + educations +
+                ", certificates=" + certificates +
+                ", skills=" + skills +
+                ", languages=" + languages +
+                '}';
+    }
 }

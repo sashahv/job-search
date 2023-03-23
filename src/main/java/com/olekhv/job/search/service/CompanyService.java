@@ -7,14 +7,16 @@ import com.olekhv.job.search.entity.user.User;
 import com.olekhv.job.search.exception.AlreadyExistsException;
 import com.olekhv.job.search.exception.NoPermissionException;
 import com.olekhv.job.search.exception.NotFoundException;
-import com.olekhv.job.search.model.CompanyModel;
+import com.olekhv.job.search.dataobjects.CompanyDO;
 import com.olekhv.job.search.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -23,30 +25,36 @@ public class CompanyService {
     private final CompanyRepository companyRepository;
     private final UserCredentialRepository userCredentialRepository;
 
-    public Company createNewCompany(CompanyModel companyModel,
+    public Company createNewCompany(CompanyDO companyDO,
                                     UserCredential userCredential) {
         User authUser = userCredential.getUser();
 
-        if (companyRepository.findByName(companyModel.getName()).isPresent()) {
-            throw new AlreadyExistsException("Company with name \"" + companyModel.getName() + "\" already exists");
+        if (companyRepository.findByName(companyDO.getName()).isPresent()) {
+            throw new AlreadyExistsException("Company with name \"" + companyDO.getName() + "\" already exists");
         }
 
         Company company = Company
                 .builder()
-                .name(companyModel.getName())
-                .taxId(companyModel.getTaxId())
-                .email(companyModel.getEmail())
-                .address(companyModel.getAddress())
+                .name(companyDO.getName())
+                .taxId(companyDO.getTaxId())
+                .email(companyDO.getEmail())
+                .address(companyDO.getAddress())
                 .owner(authUser)
-                .heads(Collections.singletonList(companyModel.getHead()))
+                .heads(companyDO.getHeads())
                 .build();
 
         return companyRepository.save(company);
     }
 
-    public Company addUserToHiringTeam(String userEmail,
-                                       Long companyId,
-                                       UserCredential userCredential){
+    public Company fetchCompanyById(Long companyId) {
+        return companyRepository.findById(companyId).orElseThrow(
+                () -> new NotFoundException("Company with id " + companyId + " not found")
+        );
+    }
+
+    public List<User> addUserToHiringTeam(String userEmail,
+                                          Long companyId,
+                                          UserCredential userCredential){
         User authUser = userCredential.getUser();
 
         Company company = companyRepository.findById(companyId).orElseThrow(
@@ -63,7 +71,9 @@ public class CompanyService {
 
         User providedUser = providedUserCredential.getUser();
 
-        company.getHiringTeam().add(providedUser);
-        return companyRepository.save(company);
+        List<User> companyHiringTeam = company.getHiringTeam();
+        companyHiringTeam.add(providedUser);
+        companyRepository.save(company);
+        return companyHiringTeam;
     }
 }

@@ -1,13 +1,15 @@
-package com.olekhv.job.search.model;
+package com.olekhv.job.search.dataobjects;
 
 import com.olekhv.job.search.entity.user.User;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
-public class CompanyModel {
+public class CompanyDO {
     private String taxId;
     private String name;
     private String address;
     private String email;
-    private User head;
+    private List<User> heads;
 }

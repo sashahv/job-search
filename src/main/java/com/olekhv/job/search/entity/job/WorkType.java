@@ -1,4 +1,4 @@
-package com.olekhv.job.search.entity.company;
+package com.olekhv.job.search.entity.job;
 
 public enum WorkType {
     ON_SITE("On-site"),

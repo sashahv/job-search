@@ -1,7 +1,7 @@
 package com.olekhv.job.search.entity.user;
 
 import com.olekhv.job.search.entity.company.Company;
-import com.olekhv.job.search.entity.company.WorkType;
+import com.olekhv.job.search.entity.job.WorkType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

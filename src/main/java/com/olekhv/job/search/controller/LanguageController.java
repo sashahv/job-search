@@ -19,7 +19,7 @@ import java.util.List;
 public class LanguageController {
     private final LanguageService languageService;
 
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<List<UserLanguage>> addLanguageToUser(@RequestBody UserLanguage language,
                                                                 @AuthenticationPrincipal UserCredential userCredential){
         return ResponseEntity.ok(languageService.addLanguageToUser(language, userCredential));

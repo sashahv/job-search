@@ -18,12 +18,8 @@ public class Attachment {
     private Long id;
     @Column(name = "name", nullable = false)
     private String name;
-    @Column(name = "description", length = 50, nullable = false)
-    private String description;
-    @Column(name = "category", length = 20, nullable = false)
-    private AttachmentCategory category;
     @Column(name = "file_type", length = 30, nullable = false)
     private String fileType;
-    @Column(name = "data", nullable = false)
+    @Lob
     private byte[] data;
 }

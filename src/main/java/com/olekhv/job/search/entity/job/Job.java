@@ -1,4 +1,4 @@
-package com.olekhv.job.search.entity.company;
+package com.olekhv.job.search.entity.job;
 
 import com.olekhv.job.search.entity.application.Application;
 import com.olekhv.job.search.entity.skill.Skill;
@@ -9,6 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -33,8 +34,7 @@ public class Job {
     @Column(name = "city", length = 60, nullable = false)
     private String city;
     @Column(name = "type", length = 20)
-    @Enumerated(EnumType.STRING)
-    private JobType types;
+    private JobType type;
     @Column(name = "role", length = 20, nullable = false)
     private String role;
     @Column(name = "work_type", length = 10)
@@ -43,7 +43,7 @@ public class Job {
     @Column(name = "empty_vacancies", length = 5)
     private Integer emptyVacancies;
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Skill> skills;
+    private List<Skill> requiredSkills = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Application> applications;
+    private List<Application> applications = new ArrayList<>();
 }

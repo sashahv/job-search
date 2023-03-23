@@ -6,18 +6,15 @@ import com.olekhv.job.search.entity.company.Company;
 import com.olekhv.job.search.entity.user.User;
 import com.olekhv.job.search.exception.AlreadyExistsException;
 import com.olekhv.job.search.exception.NoPermissionException;
-import com.olekhv.job.search.model.CompanyModel;
+import com.olekhv.job.search.dataobjects.CompanyDO;
 import com.olekhv.job.search.repository.CompanyRepository;
-import com.olekhv.job.search.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -50,7 +47,7 @@ class CompanyServiceTest {
         when(companyRepository.findByName(any(String.class))).thenReturn(Optional.empty());
 
         // When
-        companyService.createNewCompany(new CompanyModel(), userCredential);
+        companyService.createNewCompany(new CompanyDO(), userCredential);
 
         // Then
         verify(companyRepository, times(1)).save(any(Company.class));
@@ -58,12 +55,12 @@ class CompanyServiceTest {
 
     @Test
     void should_throw_exception_if_company_already_exists(){
-        CompanyModel companyModel = new CompanyModel();
-        companyModel.setName("Test Company");
+        CompanyDO companyDO = new CompanyDO();
+        companyDO.setName("Test Company");
         when(companyRepository.findByName(any(String.class))).thenReturn(Optional.of(company));
 
         assertThrows(AlreadyExistsException.class, () ->
-                companyService.createNewCompany(companyModel, userCredential));
+                companyService.createNewCompany(companyDO, userCredential));
     }
 
     @Test

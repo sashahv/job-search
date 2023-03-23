@@ -20,8 +20,10 @@ public class ConnectionRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
+    @JsonBackReference
     @ManyToOne(cascade = CascadeType.MERGE)
     private User fromUser;
+    @JsonBackReference
     @ManyToOne(cascade = CascadeType.MERGE)
     private User toUser;
 }

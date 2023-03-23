@@ -16,7 +16,7 @@ import java.util.List;
 public class SkillController {
     private final SkillService skillService;
 
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<List<Skill>> addSkillsToUser(@RequestParam("id") List<Long> skillsId,
                                                        @AuthenticationPrincipal UserCredential userCredential) {
         return ResponseEntity.ok(skillService.addSkillsToUser(skillsId, userCredential));

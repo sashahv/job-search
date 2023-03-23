@@ -24,7 +24,7 @@ public class ConnectionController {
         return ResponseEntity.ok(connectionRequestService.listAllConnectionRequests(userCredential));
     }
 
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<ConnectionRequest> sendConnectionRequest(@RequestParam("email") String userEmail,
                                                                    @AuthenticationPrincipal UserCredential userCredential){
         return ResponseEntity.ok(connectionRequestService.sendConnectionRequestToUser(userEmail, userCredential));
@@ -42,7 +42,7 @@ public class ConnectionController {
         return ResponseEntity.ok(connectionRequestService.declineConnectionRequest(userEmail, userCredential));
     }
 
-    @PostMapping("/remove")
+    @DeleteMapping("/remove")
     public ResponseEntity<List<User>> removeConnection(@RequestParam("email") String userEmail,
                                                        @AuthenticationPrincipal UserCredential userCredential){
         return ResponseEntity.ok(userService.removeConnectionWithOtherUser(userEmail, userCredential));

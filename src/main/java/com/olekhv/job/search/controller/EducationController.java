@@ -20,7 +20,7 @@ public class EducationController {
 
     private final EducationService educationService;
 
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<List<Education>> addNewEducation(@RequestBody Education education,
                                                            @AuthenticationPrincipal UserCredential userCredential){
         return ResponseEntity.ok(educationService.addNewEducation(education, userCredential));

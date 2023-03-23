@@ -1,5 +1,6 @@
 package com.olekhv.job.search.entity.company;
 
+import com.olekhv.job.search.entity.job.Job;
 import com.olekhv.job.search.entity.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -31,9 +32,9 @@ public class Company {
     private String email;
     @ManyToOne(cascade = CascadeType.ALL)
     private User owner;
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.PERSIST})
     private List<User> heads = new ArrayList<>();
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.PERSIST}, orphanRemoval = true)
     private List<User> hiringTeam = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Job> jobs = new ArrayList<>();

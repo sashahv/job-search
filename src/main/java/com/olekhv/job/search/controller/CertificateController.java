@@ -19,7 +19,7 @@ import java.util.List;
 public class CertificateController {
     private final CertificateService certificateService;
 
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<List<Certificate>> addNewCertificate(@RequestBody Certificate certificate,
                                                                @AuthenticationPrincipal UserCredential userCredential){
         return ResponseEntity.ok(certificateService.addNewCertificate(certificate, userCredential));
