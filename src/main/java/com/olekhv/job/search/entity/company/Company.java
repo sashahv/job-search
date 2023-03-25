@@ -30,12 +30,30 @@ public class Company {
     private String address;
     @Column(name = "email", length = 50, nullable = false)
     private String email;
-    @ManyToOne(cascade = CascadeType.ALL)
+    @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.DETACH})
     private User owner;
-    @ManyToMany(cascade = {CascadeType.DETACH, CascadeType.PERSIST})
+
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH})
+    @JoinTable(
+            name = "company_heads",
+            joinColumns = @JoinColumn(name = "company_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_head_id")
+    )
     private List<User> heads = new ArrayList<>();
-    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.PERSIST}, orphanRemoval = true)
+
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, orphanRemoval = true)
+    @JoinTable(
+            name = "company_hiring_team",
+            joinColumns = @JoinColumn(name = "company_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_recruiter_id")
+    )
     private List<User> hiringTeam = new ArrayList<>();
+
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "company_jobs",
+            joinColumns = @JoinColumn(name = "company_id"),
+            inverseJoinColumns = @JoinColumn(name = "job_id")
+    )
     private List<Job> jobs = new ArrayList<>();
 }

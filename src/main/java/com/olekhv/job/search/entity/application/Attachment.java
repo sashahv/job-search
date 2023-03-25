@@ -1,5 +1,6 @@
 package com.olekhv.job.search.entity.application;
 
+import com.olekhv.job.search.entity.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -21,5 +22,8 @@ public class Attachment {
     @Column(name = "file_type", length = 30, nullable = false)
     private String fileType;
     @Lob
-    private byte[] data;
+    @Column(name = "data", length = 3145728, nullable = false)
+    private byte[] data; // max size - 3 MB
+    @OneToOne
+    private User owner;
 }

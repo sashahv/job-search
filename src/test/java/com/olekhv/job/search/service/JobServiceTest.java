@@ -2,6 +2,7 @@ package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
 import com.olekhv.job.search.dataobjects.JobDO;
+import com.olekhv.job.search.entity.application.Application;
 import com.olekhv.job.search.entity.company.Company;
 import com.olekhv.job.search.entity.education.Education;
 import com.olekhv.job.search.entity.job.Job;
@@ -17,6 +18,8 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -30,31 +33,68 @@ class JobServiceTest {
     @Mock private User user;
     @Mock private UserCredential userCredential;
     @Mock private JobDO jobDO;
+    @Mock private Job job;
     @Mock private JobRepository jobRepository;
     @Mock private Company company;
     @Mock private CompanyRepository companyRepository;
+    @Mock private UserRepository userRepository;
 
     @BeforeEach
     void setUp() {
         when(userCredential.getUser()).thenReturn(user);
         when(company.getOwner()).thenReturn(user);
-        when(companyRepository.findById(1L)).thenReturn(Optional.of(company));
+        when(companyRepository.findById(any(Long.class))).thenReturn(Optional.of(company));
+        when(jobRepository.findById(any(Long.class))).thenReturn(Optional.of(job));
     }
 
     @Test
     void should_create_new_job(){
+        // Given
         when(company.getJobs()).thenReturn(new ArrayList<>());
 
+        // When
         jobService.createNewJob(jobDO, 1L, userCredential);
 
+        // Then
         verify(jobRepository,times(1)).save(any(Job.class));
         verify(companyRepository,times(1)).save(any(Company.class));
-        assertThat(company.getJobs().size()).isEqualTo(1);
+        assertEquals(1, company.getJobs().size());
     }
 
+    // If user does not have next permissions:
+    //         * he's recruiter
+    //         * owns company
+    //         * heads company
+    // he should not be able to create new job
     @Test
     void should_throw_exception_if_no_permission(){
         assertThrows(NoPermissionException.class, () ->
                 jobService.createNewJob(jobDO, 1L, new UserCredential()));
+    }
+
+    @Test
+    void should_save_job(){
+        // Given
+        when(user.getSavedJobs()).thenReturn(new ArrayList<>());
+
+        // When
+        jobService.saveJob(1L, userCredential);
+
+        // Then
+        verify(userRepository,times(1)).save(user);
+        assertEquals(1, user.getSavedJobs().size());
+    }
+
+    @Test
+    void should_delete_saved_job(){
+        // Given
+        when(user.getSavedJobs()).thenReturn(new ArrayList<>(Collections.singletonList(job)));
+
+        // When
+        jobService.deleteSavedJob(1L, userCredential);
+
+        // Then
+        verify(userRepository,times(1)).save(user);
+        assertEquals(0, user.getSavedJobs().size());
     }
 }

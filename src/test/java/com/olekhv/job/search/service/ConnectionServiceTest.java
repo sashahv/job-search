@@ -26,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
-class ConnectionRequestServiceTest {
+class ConnectionServiceTest {
 
-    @InjectMocks private ConnectionRequestService connectionRequestService;
+    @InjectMocks private ConnectionService connectionService;
 
     @Mock private ConnectionRequestRepository connectionRequestRepository;
     @Mock private UserRepository userRepository;
@@ -51,9 +51,10 @@ class ConnectionRequestServiceTest {
     @Test
     void should_send_connection_request(){
         // Given
+            // setUp()
 
         // When
-        connectionRequestService.sendConnectionRequestToUser("testUser@gmail.com", userCredential);
+        connectionService.sendConnectionRequestToUser("testUser@gmail.com", userCredential);
 
         // Then
         ArgumentCaptor<ConnectionRequest> captor = ArgumentCaptor.forClass(ConnectionRequest.class);
@@ -67,7 +68,7 @@ class ConnectionRequestServiceTest {
     void should_throw_exception_if_connection_request_already_exists(){
         when(connectionRequestRepository.findByFromUserAndToUser(any(User.class), any(User.class))).thenReturn(Optional.of(connectionRequest));
         assertThrows(AlreadyExistsException.class, () ->
-                connectionRequestService.sendConnectionRequestToUser("testUser@gmail.com", userCredential));
+                connectionService.sendConnectionRequestToUser("testUser@gmail.com", userCredential));
     }
 
     @Test
@@ -77,7 +78,7 @@ class ConnectionRequestServiceTest {
         when(connectionRequestRepository.findByFromUserAndToUser(any(User.class), any(User.class))).thenReturn(Optional.of(connectionRequest));
 
         // When
-        connectionRequestService.acceptConnectionRequest("testUser@gmail.com", userCredential);
+        connectionService.acceptConnectionRequest("testUser@gmail.com", userCredential);
 
         // Then
         verify(userRepository,times(1)).save(user);
@@ -94,7 +95,7 @@ class ConnectionRequestServiceTest {
         when(connectionRequestRepository.findByToUser(user)).thenReturn(Optional.of(List.of(connectionRequest)));
 
         // When
-        connectionRequestService.declineConnectionRequest("testUser@gmail.com", userCredential);
+        connectionService.declineConnectionRequest("testUser@gmail.com", userCredential);
 
         // Then
         verify(connectionRequestRepository,times(1)).delete(connectionRequest);
@@ -107,6 +108,32 @@ class ConnectionRequestServiceTest {
         when(connectionRequestRepository.findByFromUserAndToUser(any(User.class), any(User.class))).thenReturn(Optional.empty());
 
         assertThrows(NotFoundException.class, () ->
-                connectionRequestService.declineConnectionRequest("testUser@gmail.com", userCredential));
+                connectionService.declineConnectionRequest("testUser@gmail.com", userCredential));
+    }
+
+    @Test
+    void should_remove_connection_with_other_user(){
+        // Given
+        UserCredential connectedUserCredential = mock(UserCredential.class);
+        User connectedUser = mock(User.class);
+        when(connectedUserCredential.getUser()).thenReturn(connectedUser);
+        when(user.getConnections()).thenReturn(new ArrayList<>(Collections.singletonList(connectedUser)));
+        when(connectedUser.getConnections()).thenReturn(new ArrayList<>(Collections.singletonList(user)));
+        when(userCredential.getUser()).thenReturn(user);
+        when(userCredentialRepository.findByEmail("testConnectedEmail@gmail.com")).thenReturn(Optional.of(connectedUserCredential));
+
+        // When
+        connectionService.removeConnectionWithOtherUser("testConnectedEmail@gmail.com", userCredential);
+
+        // Then
+        verify(userRepository,times(2)).save(any(User.class));
+        assertEquals(0, user.getConnections().size());
+        assertEquals(0, connectedUser.getConnections().size());
+    }
+
+    @Test
+    void should_throw_exception_if_connection_not_exists(){
+        assertThrows(NotFoundException.class, () ->
+                connectionService.removeConnectionWithOtherUser("testUser@gmail.com", userCredential));
     }
 }

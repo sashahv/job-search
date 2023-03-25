@@ -1,9 +1,15 @@
 package com.olekhv.job.search.controller;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
+import com.olekhv.job.search.dataobjects.EmailDO;
 import com.olekhv.job.search.entity.application.Application;
+import com.olekhv.job.search.entity.application.Attachment;
 import com.olekhv.job.search.service.ApplicationService;
+import com.olekhv.job.search.utils.AttachmentUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -17,28 +23,39 @@ import java.util.List;
 public class ApplicationController {
     private final ApplicationService applicationService;
 
+    @GetMapping("/job/{jobId}")
+    public ResponseEntity<List<Application>> listAllApplications(@PathVariable("jobId") Long jobId,
+                                                                 @AuthenticationPrincipal UserCredential userCredential){
+        return ResponseEntity.ok(applicationService.listAllApplications(jobId, userCredential));
+    }
+
     @GetMapping("/{applicationId}")
-    public ResponseEntity<Application> fetchApplicationById(@PathVariable("applicationId") Long applicationId){
-        return ResponseEntity.ok(applicationService.fetchApplicationById(applicationId));
+    public ResponseEntity<Application> getApplicationById(@PathVariable("applicationId") Long applicationId,
+                                                            @AuthenticationPrincipal UserCredential userCredential){
+        Application application = applicationService.getApplicationById(applicationId, userCredential);
+        return ResponseEntity.ok(application);
     }
 
-    @PostMapping
+    @PostMapping("/job/{jobId}")
     public ResponseEntity<Application> createNewApplication(@AuthenticationPrincipal UserCredential userCredential,
-                                                            @RequestParam Long jobId,
+                                                            @PathVariable Long jobId,
                                                             @RequestBody List<MultipartFile> multipartFile){
-        return ResponseEntity.ok(applicationService.createNewApplication(userCredential, jobId, multipartFile));
+        return new ResponseEntity<>(applicationService.createNewApplication(userCredential, jobId, multipartFile), HttpStatus.CREATED);
     }
 
-//    @PostMapping("/{applicationId}/file")
-//    public ResponseEntity<String> attachFile(@PathVariable("applicationId") Long applicationId,
-//                                             @ModelAttribute AttachmentDO attachmentDO){
-//        applicationService.attachFileToApplication(applicationId, attachmentDO);
-//        return ResponseEntity.ok("File successfully attached");
-//    }
-//
-//    @PostMapping("/{jobId}/{applicationId}")
-//    public ResponseEntity<Application> sendApplication(@PathVariable("jobId") Long jobId,
-//                                                       @PathVariable("applicationId") Long applicationId){
-//        return ResponseEntity.ok(applicationService.sendApplication(applicationId, jobId));
-//    }
+    @GetMapping("/attachment/{attachmentId}")
+    public ResponseEntity<ByteArrayResource> watchFile(@PathVariable Long attachmentId,
+                                                       @AuthenticationPrincipal UserCredential userCredential) {
+        Attachment attachment = applicationService.getAttachmentById(attachmentId, userCredential);
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(attachment.getFileType()))
+                .body(new ByteArrayResource(AttachmentUtils.decompressFile(attachment.getData())));
+    }
+
+    @PostMapping("/{applicationId}/decline")
+    public ResponseEntity<Application> declineApplication(@PathVariable Long applicationId,
+                                                          @RequestBody(required = false) EmailDO emailDO,
+                                                          @AuthenticationPrincipal UserCredential userCredential){
+        return ResponseEntity.ok(applicationService.declineApplication(applicationId, emailDO, userCredential));
+    }
 }

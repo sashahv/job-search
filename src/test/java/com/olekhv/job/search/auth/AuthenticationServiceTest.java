@@ -10,7 +10,6 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.times;
 
@@ -35,6 +34,7 @@ class AuthenticationServiceTest {
 
     @Test
     void should_change_user_password(){
+        // Given
         String oldPassword = "oldPassword";
         String newPassword = "newPassword";
         String passwordConfirmation = "newPassword";
@@ -46,8 +46,10 @@ class AuthenticationServiceTest {
         when(passwordModel.getNewPassword()).thenReturn(newPassword);
         when(passwordModel.getPasswordConfirmation()).thenReturn(passwordConfirmation);
 
+        // When
         authenticationService.changePassword(passwordModel, userCredential);
 
+        // Then
         verify(userCredential, times(1)).setPassword(encodedPassword);
         verify(userCredentialRepository, times(1)).save(userCredential);
     }

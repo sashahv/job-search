@@ -28,12 +28,31 @@ public class CompanyService {
     public Company createNewCompany(CompanyDO companyDO,
                                     UserCredential userCredential) {
         User authUser = userCredential.getUser();
-
         if (companyRepository.findByName(companyDO.getName()).isPresent()) {
             throw new AlreadyExistsException("Company with name \"" + companyDO.getName() + "\" already exists");
         }
+        Company company = buildCompany(companyDO, authUser);
+        return companyRepository.save(company);
+    }
 
-        Company company = Company
+    public List<User> addUserToHiringTeam(String userEmail,
+                                          Long companyId,
+                                          UserCredential userCredential){
+        User authUser = userCredential.getUser();
+        Company company = findCompanyById(companyId);
+        if(!company.getOwner().equals(authUser) && !company.getHeads().contains(authUser)){
+            throw new NoPermissionException("No permission");
+        }
+        UserCredential providedUserCredential = findUserCredentialByEmail(userEmail);
+        User providedUser = providedUserCredential.getUser();
+        List<User> companyHiringTeam = company.getHiringTeam();
+        companyHiringTeam.add(providedUser);
+        companyRepository.save(company);
+        return companyHiringTeam;
+    }
+
+    private Company buildCompany(CompanyDO companyDO, User authUser) {
+        return Company
                 .builder()
                 .name(companyDO.getName())
                 .taxId(companyDO.getTaxId())
@@ -42,38 +61,17 @@ public class CompanyService {
                 .owner(authUser)
                 .heads(companyDO.getHeads())
                 .build();
-
-        return companyRepository.save(company);
     }
 
-    public Company fetchCompanyById(Long companyId) {
+    private UserCredential findUserCredentialByEmail(String userEmail) {
+        return userCredentialRepository.findByEmail(userEmail).orElseThrow(
+                () -> new UsernameNotFoundException("User " + userEmail + " does not exist")
+        );
+    }
+
+    public Company findCompanyById(Long companyId) {
         return companyRepository.findById(companyId).orElseThrow(
                 () -> new NotFoundException("Company with id " + companyId + " not found")
         );
-    }
-
-    public List<User> addUserToHiringTeam(String userEmail,
-                                          Long companyId,
-                                          UserCredential userCredential){
-        User authUser = userCredential.getUser();
-
-        Company company = companyRepository.findById(companyId).orElseThrow(
-                () -> new NotFoundException("Company with id " + companyId + " not found")
-        );
-
-        if(!company.getOwner().equals(authUser) && !company.getHeads().contains(authUser)){
-            throw new NoPermissionException("No permission");
-        }
-
-        UserCredential providedUserCredential = userCredentialRepository.findByEmail(userEmail).orElseThrow(
-                () -> new UsernameNotFoundException("User " + userEmail + " does not exist")
-        );
-
-        User providedUser = providedUserCredential.getUser();
-
-        List<User> companyHiringTeam = company.getHiringTeam();
-        companyHiringTeam.add(providedUser);
-        companyRepository.save(company);
-        return companyHiringTeam;
     }
 }

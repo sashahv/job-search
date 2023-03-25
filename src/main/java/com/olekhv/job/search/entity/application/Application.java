@@ -26,10 +26,15 @@ public class Application {
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "application_attachments",
+            joinColumns = @JoinColumn(name = "application_id"),
+            inverseJoinColumns = @JoinColumn(name = "attachment_id")
+    )
     private List<Attachment> attachments = new ArrayList<>();
     @Column(name = "status", length = 20, nullable = false)
     @Enumerated(EnumType.STRING)
     private ApplicationStatus status;
-    @OneToOne(cascade = {CascadeType.DETACH})
+    @OneToOne(cascade = {CascadeType.DETACH, CascadeType.PERSIST})
     private User owner;
 }

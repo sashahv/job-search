@@ -43,7 +43,17 @@ public class Job {
     @Column(name = "empty_vacancies", length = 5)
     private Integer emptyVacancies;
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "job_required_skills",
+            joinColumns = @JoinColumn(name = "job_id"),
+            inverseJoinColumns = @JoinColumn(name = "skill_id")
+    )
     private List<Skill> requiredSkills = new ArrayList<>();
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinTable(
+            name = "job_applications",
+            joinColumns = @JoinColumn(name = "job_id"),
+            inverseJoinColumns = @JoinColumn(name = "application_id")
+    )
     private List<Application> applications = new ArrayList<>();
 }

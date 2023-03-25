@@ -78,6 +78,12 @@ class CompanyServiceTest {
         assertThat(company.getHiringTeam().contains(providedUser)).isTrue();
     }
 
+
+    // If user does not have next permissions:
+    //         * he's recruiter
+    //         * owns company
+    //         * heads company
+    // He should not be able to add new users to hiring team
     @Test
     void should_throw_exception_if_no_permission(){
         UserCredential providedUserCredential = mock(UserCredential.class);

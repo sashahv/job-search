@@ -16,6 +16,16 @@ spring:
         format_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
-  servlet:
-    multipart:
-      max-file-size: 3MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: s.hvozditskyi@gmail.com
+    password: bdjkzvvynxbgkteb
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          debug: true

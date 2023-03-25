@@ -31,26 +31,4 @@ public class UserService {
         authUser.setCity(editedUser.getCity());
         return userRepository.save(authUser);
     }
-
-    public List<User> removeConnectionWithOtherUser(String userEmail,
-                                                    UserCredential userCredential){
-        User authUser = userCredential.getUser();
-
-        UserCredential connectedUserCredential = userCredentialRepository.findByEmail(userEmail).orElseThrow(
-                () -> new UsernameNotFoundException("User with email " + userEmail + " does not exist")
-        );
-
-        User connectedUser = connectedUserCredential.getUser();
-
-        if(!authUser.getConnections().contains(connectedUser)){
-            throw new NotFoundException("Not found connection with "
-                    + connectedUser.getFirstName() + " " + connectedUser.getLastName());
-        }
-
-        connectedUser.getConnections().remove(authUser);
-        authUser.getConnections().remove(connectedUser);
-        userRepository.save(authUser);
-        userRepository.save(connectedUser);
-        return authUser.getConnections();
-    }
 }

@@ -9,6 +9,7 @@ import com.olekhv.job.search.dataobjects.CompanyDO;
 import com.olekhv.job.search.service.CompanyService;
 import com.olekhv.job.search.service.JobService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -25,12 +26,12 @@ public class CompanyController {
     @PostMapping
     public ResponseEntity<Company> createNewCompany(@RequestBody CompanyDO companyDO,
                                                     @AuthenticationPrincipal UserCredential userCredential){
-        return ResponseEntity.ok(companyService.createNewCompany(companyDO, userCredential));
+        return new ResponseEntity<>(companyService.createNewCompany(companyDO, userCredential), HttpStatus.CREATED);
     }
 
     @GetMapping("/{companyId}")
     public ResponseEntity<Company> fetchCompanyById(@PathVariable Long companyId){
-        return ResponseEntity.ok(companyService.fetchCompanyById(companyId));
+        return ResponseEntity.ok(companyService.findCompanyById(companyId));
     }
     
     @PostMapping("/{companyId}/hiring-team")
@@ -44,6 +45,6 @@ public class CompanyController {
     public ResponseEntity<Job> createJob(@RequestBody JobDO jobDO,
                                          @PathVariable Long companyId,
                                          @AuthenticationPrincipal UserCredential userCredential){
-        return ResponseEntity.ok(jobService.createNewJob(jobDO, companyId, userCredential));
+        return new ResponseEntity<>(jobService.createNewJob(jobDO, companyId, userCredential), HttpStatus.CREATED);
     }
 }
