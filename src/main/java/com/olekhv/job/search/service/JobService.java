@@ -15,8 +15,10 @@ import com.olekhv.job.search.repository.JobRepository;
 import com.olekhv.job.search.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -61,6 +63,23 @@ public class JobService {
         return authUserSavedJobs;
     }
 
+    // Every night at 00:00 system will check
+    // if jobs are not expired. If some job expires
+    // it will get "Expired" status
+    @Scheduled(cron = "0 0 0 * * *")
+    public void makeExpiredJobsInactive(){
+        jobRepository.findAll().stream()
+                .filter(this::isExpired)
+                .forEach(job -> {
+                    job.setIsActive(false);
+                    jobRepository.save(job);
+                });
+    }
+
+    private boolean isExpired(Job job){
+        return job.getIsActive() && job.getExpiresAt().isBefore(LocalDateTime.now());
+    }
+
     // Check if user has next permissions:
     //         * he's recruiter
     //         * owns company
@@ -75,10 +94,13 @@ public class JobService {
     }
 
     private Job buildJob(JobDO jobDO) {
+        LocalDateTime now = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         return Job.builder()
+                .isActive(true)
                 .title(jobDO.getTitle())
                 .description(jobDO.getDescription())
-                .createdAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS))
+                .createdAt(now)
+                .expiresAt(now.plusDays(30))
                 .country(jobDO.getCountry())
                 .city(jobDO.getCity())
                 .type(jobDO.getType())

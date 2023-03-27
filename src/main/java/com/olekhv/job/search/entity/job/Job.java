@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +30,8 @@ public class Job {
     private String description;
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt;
     @Column(name = "country", length = 60, nullable = false)
     private String country;
     @Column(name = "city", length = 60, nullable = false)
@@ -56,4 +59,7 @@ public class Job {
             inverseJoinColumns = @JoinColumn(name = "application_id")
     )
     private List<Application> applications = new ArrayList<>();
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
 }

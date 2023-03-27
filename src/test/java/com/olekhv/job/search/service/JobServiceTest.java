@@ -17,10 +17,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -70,6 +68,23 @@ class JobServiceTest {
     void should_throw_exception_if_no_permission(){
         assertThrows(NoPermissionException.class, () ->
                 jobService.createNewJob(jobDO, 1L, new UserCredential()));
+    }
+
+    @Test
+    void should_make_job_inactive_if_expired(){
+        List<Job> expiredJobs = List.of(
+                Job.builder().isActive(true).expiresAt(LocalDateTime.now().minusDays(1)).build(),
+                Job.builder().isActive(true).expiresAt(LocalDateTime.now().plusDays(1)).build(),
+                Job.builder().isActive(false).expiresAt(LocalDateTime.now().plusDays(1)).build()
+        );
+        when(jobRepository.findAll()).thenReturn(expiredJobs);
+
+        jobService.makeExpiredJobsInactive();
+
+        assertFalse(expiredJobs.get(0).getIsActive());
+        assertTrue(expiredJobs.get(1).getIsActive());
+        assertFalse(expiredJobs.get(2).getIsActive());
+        verify(jobRepository, times(1)).save(any(Job.class));
     }
 
     @Test
