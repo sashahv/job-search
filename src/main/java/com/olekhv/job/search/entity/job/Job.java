@@ -3,18 +3,19 @@ package com.olekhv.job.search.entity.job;
 import com.olekhv.job.search.entity.application.Application;
 import com.olekhv.job.search.entity.skill.Skill;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.Hibernate;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -45,14 +46,14 @@ public class Job {
     private WorkType workType;
     @Column(name = "empty_vacancies", length = 5)
     private Integer emptyVacancies;
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinTable(
             name = "job_required_skills",
             joinColumns = @JoinColumn(name = "job_id"),
             inverseJoinColumns = @JoinColumn(name = "skill_id")
     )
     private List<Skill> requiredSkills = new ArrayList<>();
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinTable(
             name = "job_applications",
             joinColumns = @JoinColumn(name = "job_id"),
@@ -62,4 +63,17 @@ public class Job {
 
     @Column(name = "is_active", nullable = false)
     private Boolean isActive;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Job job = (Job) o;
+        return getId() != null && Objects.equals(getId(), job.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

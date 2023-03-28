@@ -6,6 +6,7 @@ import com.olekhv.job.search.entity.education.Education;
 import com.olekhv.job.search.entity.job.Job;
 import com.olekhv.job.search.entity.language.UserLanguage;
 import com.olekhv.job.search.entity.skill.Skill;
+import com.olekhv.job.search.entity.workExperience.WorkExperience;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.Hibernate;
@@ -95,7 +96,7 @@ public class User {
     )
     private List<User> connections = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH, CascadeType.PERSIST}, fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_saved_jobs",
             joinColumns = @JoinColumn(name = "user_id"),

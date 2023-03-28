@@ -3,16 +3,18 @@ package com.olekhv.job.search.entity.company;
 import com.olekhv.job.search.entity.job.Job;
 import com.olekhv.job.search.entity.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.Hibernate;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -33,7 +35,7 @@ public class Company {
     @ManyToOne(cascade = {CascadeType.MERGE, CascadeType.DETACH})
     private User owner;
 
-    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH})
+    @ManyToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.EAGER)
     @JoinTable(
             name = "company_heads",
             joinColumns = @JoinColumn(name = "company_id"),
@@ -41,7 +43,7 @@ public class Company {
     )
     private List<User> heads = new ArrayList<>();
 
-    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, orphanRemoval = true)
+    @OneToMany(cascade = {CascadeType.MERGE, CascadeType.DETACH}, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinTable(
             name = "company_hiring_team",
             joinColumns = @JoinColumn(name = "company_id"),
@@ -49,11 +51,24 @@ public class Company {
     )
     private List<User> hiringTeam = new ArrayList<>();
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinTable(
             name = "company_jobs",
             joinColumns = @JoinColumn(name = "company_id"),
             inverseJoinColumns = @JoinColumn(name = "job_id")
     )
     private List<Job> jobs = new ArrayList<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Company company = (Company) o;
+        return getId() != null && Objects.equals(getId(), company.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

@@ -1,17 +1,18 @@
 package com.olekhv.job.search.entity.connectionRequest;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.olekhv.job.search.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.OnDelete;
-import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.Hibernate;
+
+import java.util.Objects;
 
 @Entity
 @Getter
 @Setter
+@ToString
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -26,4 +27,17 @@ public class ConnectionRequest {
     @JsonBackReference
     @ManyToOne(cascade = CascadeType.MERGE)
     private User toUser;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        ConnectionRequest that = (ConnectionRequest) o;
+        return getId() != null && Objects.equals(getId(), that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

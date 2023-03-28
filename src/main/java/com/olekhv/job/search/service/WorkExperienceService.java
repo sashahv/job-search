@@ -2,11 +2,9 @@ package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
 import com.olekhv.job.search.auth.userCredential.UserCredentialRepository;
-import com.olekhv.job.search.entity.education.Education;
 import com.olekhv.job.search.entity.user.User;
-import com.olekhv.job.search.entity.user.WorkExperience;
+import com.olekhv.job.search.entity.workExperience.WorkExperience;
 import com.olekhv.job.search.repository.UserRepository;
-import com.olekhv.job.search.repository.WorkExperienceRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

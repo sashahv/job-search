@@ -37,12 +37,18 @@ public class ApplicationService {
     private final AttachmentRepository attachmentRepository;
     private final CompanyRepository companyRepository;
     private final EmailSenderService emailSenderService;
+    private final JobService jobService;
 
     public Application createNewApplication(UserCredential userCredential,
                                             Long jobId,
                                             List<MultipartFile> multipartFiles) {
         User authUser = userCredential.getUser();
         Job job = findJobById(jobId);
+
+        if(jobService.isExpired(job)){
+            throw new RuntimeException("Job proposition is expired");
+        }
+
         Application application = new Application();
         application.setCreatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
         application.setStatus(ApplicationStatus.APPLIED);
@@ -103,7 +109,8 @@ public class ApplicationService {
         Company company = findCompanyByJob(job);
         checkPermission(authUser, company);
         application.setStatus(applicationStatus);
-        return applicationRepository.save(application);
+        applicationRepository.save(application);
+        return application;
     }
 
     public Application declineApplication(Long applicationId,
@@ -130,7 +137,7 @@ public class ApplicationService {
         applicationRepository.deleteAll(applicationsToDelete);
         applicationsToDelete.forEach(application -> attachmentRepository.deleteAll(application.getAttachments()));
     }
-
+    
     private List<Application> generateListOfInactiveApplications(LocalDateTime localDateTime) {
         List<Application> declinedApplications =
                 applicationRepository.findByStatusAndCreatedAtBefore(ApplicationStatus.DECLINED, localDateTime);

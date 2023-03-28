@@ -40,11 +40,4 @@ public class CompanyController {
                                                           @AuthenticationPrincipal UserCredential userCredential){
         return ResponseEntity.ok(companyService.addUserToHiringTeam(userEmail, companyId, userCredential));
     }
-
-    @PostMapping("/{companyId}/jobs")
-    public ResponseEntity<Job> createJob(@RequestBody JobDO jobDO,
-                                         @PathVariable Long companyId,
-                                         @AuthenticationPrincipal UserCredential userCredential){
-        return new ResponseEntity<>(jobService.createNewJob(jobDO, companyId, userCredential), HttpStatus.CREATED);
-    }
 }

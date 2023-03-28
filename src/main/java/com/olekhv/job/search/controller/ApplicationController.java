@@ -4,6 +4,7 @@ import com.olekhv.job.search.auth.userCredential.UserCredential;
 import com.olekhv.job.search.dataobjects.EmailDO;
 import com.olekhv.job.search.entity.application.Application;
 import com.olekhv.job.search.entity.application.Attachment;
+import com.olekhv.job.search.repository.ApplicationRepository;
 import com.olekhv.job.search.service.ApplicationService;
 import com.olekhv.job.search.utils.AttachmentUtils;
 import lombok.RequiredArgsConstructor;

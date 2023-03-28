@@ -1,8 +1,7 @@
 package com.olekhv.job.search.controller;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
-import com.olekhv.job.search.entity.skill.Skill;
-import com.olekhv.job.search.entity.user.WorkExperience;
+import com.olekhv.job.search.entity.workExperience.WorkExperience;
 import com.olekhv.job.search.service.WorkExperienceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

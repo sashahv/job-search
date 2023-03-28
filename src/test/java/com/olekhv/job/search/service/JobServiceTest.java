@@ -4,10 +4,10 @@ import com.olekhv.job.search.auth.userCredential.UserCredential;
 import com.olekhv.job.search.dataobjects.JobDO;
 import com.olekhv.job.search.entity.application.Application;
 import com.olekhv.job.search.entity.company.Company;
-import com.olekhv.job.search.entity.education.Education;
 import com.olekhv.job.search.entity.job.Job;
 import com.olekhv.job.search.entity.user.User;
 import com.olekhv.job.search.exception.NoPermissionException;
+import com.olekhv.job.search.repository.ApplicationRepository;
 import com.olekhv.job.search.repository.CompanyRepository;
 import com.olekhv.job.search.repository.JobRepository;
 import com.olekhv.job.search.repository.UserRepository;
@@ -18,24 +18,38 @@ import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SpringBootTest
 class JobServiceTest {
-    @InjectMocks private JobService jobService;
+    @InjectMocks
+    private JobService jobService;
 
-    @Mock private User user;
-    @Mock private UserCredential userCredential;
-    @Mock private JobDO jobDO;
-    @Mock private Job job;
-    @Mock private JobRepository jobRepository;
-    @Mock private Company company;
-    @Mock private CompanyRepository companyRepository;
-    @Mock private UserRepository userRepository;
+    @Mock
+    private User user;
+    @Mock
+    private UserCredential userCredential;
+    @Mock
+    private JobDO jobDO;
+    @Mock
+    private Job job;
+    @Mock
+    private JobRepository jobRepository;
+    @Mock
+    private Company company;
+    @Mock
+    private CompanyRepository companyRepository;
+    @Mock
+    private UserRepository userRepository;
+    @Mock
+    private ApplicationRepository applicationRepository;
 
     @BeforeEach
     void setUp() {
@@ -46,7 +60,7 @@ class JobServiceTest {
     }
 
     @Test
-    void should_create_new_job(){
+    void should_create_new_job() {
         // Given
         when(company.getJobs()).thenReturn(new ArrayList<>());
 
@@ -54,8 +68,8 @@ class JobServiceTest {
         jobService.createNewJob(jobDO, 1L, userCredential);
 
         // Then
-        verify(jobRepository,times(1)).save(any(Job.class));
-        verify(companyRepository,times(1)).save(any(Company.class));
+        verify(jobRepository, times(1)).save(any(Job.class));
+        verify(companyRepository, times(1)).save(any(Company.class));
         assertEquals(1, company.getJobs().size());
     }
 
@@ -65,13 +79,13 @@ class JobServiceTest {
     //         * heads company
     // he should not be able to create new job
     @Test
-    void should_throw_exception_if_no_permission(){
+    void should_throw_exception_if_no_permission() {
         assertThrows(NoPermissionException.class, () ->
                 jobService.createNewJob(jobDO, 1L, new UserCredential()));
     }
 
     @Test
-    void should_make_job_inactive_if_expired(){
+    void should_make_job_inactive_if_expired() {
         List<Job> expiredJobs = List.of(
                 Job.builder().isActive(true).expiresAt(LocalDateTime.now().minusDays(1)).build(),
                 Job.builder().isActive(true).expiresAt(LocalDateTime.now().plusDays(1)).build(),
@@ -88,7 +102,48 @@ class JobServiceTest {
     }
 
     @Test
-    void should_save_job(){
+    void should_extend_job_recruitment_termin() {
+        when(companyRepository.findByJobsIsContaining(job)).thenReturn(Optional.of(company));
+
+        Job updatedJob = jobService.extendJobRecruitmentTerm(1L, userCredential);
+
+        verify(jobRepository, times(1)).save(this.job);
+        verify(this.job, times(1)).setExpiresAt(LocalDateTime.now().plusDays(30).truncatedTo(ChronoUnit.SECONDS));
+        verify(jobRepository, times(1)).save(this.job);
+        assertEquals(updatedJob, job);
+    }
+
+    @Test
+    void should_delete_jobs_expired_90_days_ago() {
+        LocalDateTime threeMonthsAgo = LocalDateTime.now().minusDays(91).truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime twoMonthsAgo = LocalDateTime.now().minusDays(60).truncatedTo(ChronoUnit.SECONDS);
+        LocalDateTime oneMonthLater = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
+        List<Job> jobs = new ArrayList<>(List.of(
+                Job.builder().isActive(false).expiresAt(threeMonthsAgo).applications(new ArrayList<>()).build(),
+                Job.builder().isActive(false).expiresAt(twoMonthsAgo).applications(new ArrayList<>()).build(),
+                Job.builder().isActive(true).expiresAt(oneMonthLater).applications(new ArrayList<>()).build()
+        ));
+        when(jobRepository.findAll()).thenReturn(jobs);
+
+        jobService.deleteAllExpiredJobsAndApplications();
+
+        verify(jobRepository, times(1)).delete(any(Job.class));
+        verify(applicationRepository, times(1)).deleteAll(new ArrayList<>());
+    }
+
+    @Test
+    void should_delete_job() {
+        when(userRepository.findBySavedJobsIsContaining(job)).thenReturn(Optional.of(user));
+        when(companyRepository.findByJobsIsContaining(job)).thenReturn(Optional.of(company));
+        jobService.deleteJob(1L);
+
+        verify(userRepository, times(1)).save(user);
+        verify(companyRepository, times(1)).save(company);
+        verify(jobRepository, times(1)).delete(job);
+    }
+
+    @Test
+    void should_save_job() {
         // Given
         when(user.getSavedJobs()).thenReturn(new ArrayList<>());
 
@@ -96,20 +151,22 @@ class JobServiceTest {
         jobService.saveJob(1L, userCredential);
 
         // Then
-        verify(userRepository,times(1)).save(user);
+        verify(userRepository, times(1)).save(user);
         assertEquals(1, user.getSavedJobs().size());
     }
 
     @Test
-    void should_delete_saved_job(){
+    void should_delete_saved_job() {
         // Given
         when(user.getSavedJobs()).thenReturn(new ArrayList<>(Collections.singletonList(job)));
+        when(userRepository.findBySavedJobsIsContaining(job)).thenReturn(Optional.of(user));
+        when(companyRepository.findByJobsIsContaining(job)).thenReturn(Optional.of(company));
 
         // When
         jobService.deleteSavedJob(1L, userCredential);
 
         // Then
-        verify(userRepository,times(1)).save(user);
+        verify(userRepository, times(1)).save(user);
         assertEquals(0, user.getSavedJobs().size());
     }
 }

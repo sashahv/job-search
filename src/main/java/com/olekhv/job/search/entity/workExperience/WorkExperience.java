@@ -1,4 +1,4 @@
-package com.olekhv.job.search.entity.user;
+package com.olekhv.job.search.entity.workExperience;
 
 import com.olekhv.job.search.entity.company.Company;
 import com.olekhv.job.search.entity.job.WorkType;

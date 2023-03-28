@@ -32,7 +32,8 @@ public class CompanyService {
             throw new AlreadyExistsException("Company with name \"" + companyDO.getName() + "\" already exists");
         }
         Company company = buildCompany(companyDO, authUser);
-        return companyRepository.save(company);
+        companyRepository.save(company);
+        return company;
     }
 
     public List<User> addUserToHiringTeam(String userEmail,

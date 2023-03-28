@@ -1,15 +1,17 @@
 package com.olekhv.job.search.entity.certificate;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.Hibernate;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -29,4 +31,17 @@ public class Certificate {
     private LocalDate expirationDate;
     @Column(name = "url")
     private String url;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Certificate that = (Certificate) o;
+        return getId() != null && Objects.equals(getId(), that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

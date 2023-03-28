@@ -1,13 +1,16 @@
 package com.olekhv.job.search.entity.language;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.Hibernate;
+
+import java.util.Objects;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -21,4 +24,17 @@ public class UserLanguage {
     private Language language;
     @Enumerated(EnumType.STRING)
     private LanguageProficiency proficiency;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        UserLanguage that = (UserLanguage) o;
+        return getId() != null && Objects.equals(getId(), that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

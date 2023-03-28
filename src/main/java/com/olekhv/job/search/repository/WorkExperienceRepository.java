@@ -1,6 +1,6 @@
 package com.olekhv.job.search.repository;
 
-import com.olekhv.job.search.entity.user.WorkExperience;
+import com.olekhv.job.search.entity.workExperience.WorkExperience;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

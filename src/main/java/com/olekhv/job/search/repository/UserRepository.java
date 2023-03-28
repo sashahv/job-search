@@ -1,5 +1,6 @@
 package com.olekhv.job.search.repository;
 
+import com.olekhv.job.search.entity.job.Job;
 import com.olekhv.job.search.entity.user.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -9,4 +10,5 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
+    Optional<User> findBySavedJobsIsContaining(Job job);
 }

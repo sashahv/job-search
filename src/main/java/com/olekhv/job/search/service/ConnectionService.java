@@ -8,6 +8,7 @@ import com.olekhv.job.search.entity.connectionRequest.ConnectionRequestRepositor
 import com.olekhv.job.search.exception.AlreadyExistsException;
 import com.olekhv.job.search.exception.NotFoundException;
 import com.olekhv.job.search.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -49,7 +50,8 @@ public class ConnectionService {
                 .fromUser(authUser)
                 .toUser(userToRequest)
                 .build();
-        return connectionRequestRepository.save(connectionRequest);
+        connectionRequestRepository.save(connectionRequest);
+        return connectionRequest;
     }
 
     public List<ConnectionRequest> acceptConnectionRequest(String userEmail,
@@ -76,7 +78,7 @@ public class ConnectionService {
         return connectionRequestRepository.findByToUser(authUser).get();
     }
 
-
+    @Transactional
     public List<User> removeConnectionWithOtherUser(String userEmail,
                                                     UserCredential userCredential){
         User authUser = userCredential.getUser();

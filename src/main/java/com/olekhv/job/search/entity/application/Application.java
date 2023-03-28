@@ -1,20 +1,20 @@
 package com.olekhv.job.search.entity.application;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.olekhv.job.search.entity.user.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.hibernate.Hibernate;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -25,7 +25,7 @@ public class Application {
     private Long id;
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     @JoinTable(
             name = "application_attachments",
             joinColumns = @JoinColumn(name = "application_id"),
@@ -37,4 +37,17 @@ public class Application {
     private ApplicationStatus status;
     @OneToOne(cascade = {CascadeType.DETACH, CascadeType.PERSIST})
     private User owner;
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Application that = (Application) o;
+        return getId() != null && Objects.equals(getId(), that.getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }
