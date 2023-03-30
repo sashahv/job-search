@@ -1,4 +1,4 @@
-package com.olekhv.job.search.dataobjects;
+package com.olekhv.job.search.dataobject;
 
 import com.olekhv.job.search.entity.user.User;
 import lombok.Data;

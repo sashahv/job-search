@@ -7,15 +7,13 @@ import com.olekhv.job.search.entity.user.User;
 import com.olekhv.job.search.exception.AlreadyExistsException;
 import com.olekhv.job.search.exception.NoPermissionException;
 import com.olekhv.job.search.exception.NotFoundException;
-import com.olekhv.job.search.dataobjects.CompanyDO;
+import com.olekhv.job.search.dataobject.CompanyDO;
 import com.olekhv.job.search.repository.CompanyRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 @Service

@@ -6,7 +6,7 @@ import com.olekhv.job.search.entity.company.Company;
 import com.olekhv.job.search.entity.user.User;
 import com.olekhv.job.search.exception.AlreadyExistsException;
 import com.olekhv.job.search.exception.NoPermissionException;
-import com.olekhv.job.search.dataobjects.CompanyDO;
+import com.olekhv.job.search.dataobject.CompanyDO;
 import com.olekhv.job.search.repository.CompanyRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

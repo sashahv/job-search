@@ -1,26 +1,25 @@
 package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
-import com.olekhv.job.search.entity.application.Application;
-import com.olekhv.job.search.entity.application.ApplicationStatus;
-import com.olekhv.job.search.entity.application.Attachment;
 import com.olekhv.job.search.entity.company.Company;
 import com.olekhv.job.search.entity.job.Job;
-import com.olekhv.job.search.dataobjects.JobDO;
+import com.olekhv.job.search.dataobject.JobDO;
+import com.olekhv.job.search.entity.job.JobFilterFields;
 import com.olekhv.job.search.entity.user.User;
 import com.olekhv.job.search.exception.NoPermissionException;
 import com.olekhv.job.search.exception.NotFoundException;
-import com.olekhv.job.search.repository.ApplicationRepository;
 import com.olekhv.job.search.repository.CompanyRepository;
 import com.olekhv.job.search.repository.JobRepository;
 import com.olekhv.job.search.repository.UserRepository;
+import com.olekhv.job.search.specification.JobSpec;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.*;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -33,9 +32,21 @@ public class JobService {
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
 
+    public Page<Job> listAllJobs(Integer pageNumber,
+                                 String sortField,
+                                 String sortDirection,
+                                 String keyword,
+                                 JobFilterFields jobFilterFields) {
+        log.info("jobFilterFields = " + jobFilterFields);
+        Sort sort = Sort.by(sortField);
+        sort = sortDirection.equals("asc") ? sort.ascending() : sort.descending();
+
+        return generateResultPage(pageNumber, keyword, jobFilterFields, sort);
+    }
+
     public Job createNewJob(JobDO jobDO,
                             Long companyId,
-                            UserCredential userCredential){
+                            UserCredential userCredential) {
         User authUser = userCredential.getUser();
         Company company = findCompanyById(companyId);
         checkPermission(authUser, company);
@@ -47,7 +58,7 @@ public class JobService {
     }
 
     public List<Job> saveJob(Long jobId,
-                             UserCredential userCredential){
+                             UserCredential userCredential) {
         User authUser = userCredential.getUser();
         Job job = findJobById(jobId);
         List<Job> authUserSavedJobs = authUser.getSavedJobs();
@@ -58,7 +69,7 @@ public class JobService {
 
     @Transactional
     public void deleteSavedJob(Long jobId,
-                               UserCredential userCredential){
+                               UserCredential userCredential) {
         User authUser = userCredential.getUser();
         Job job = findJobById(jobId);
         List<Job> authUserSavedJobs = authUser.getSavedJobs();
@@ -72,7 +83,7 @@ public class JobService {
     // if jobs are not expired. If some job expires
     // it will get "Expired" status
     @Scheduled(cron = "0 0 0 * * *")
-    public void makeExpiredJobsInactive(){
+    public void makeExpiredJobsInactive() {
         jobRepository.findAll().stream()
                 .filter(this::isExpired)
                 .forEach(job -> {
@@ -82,7 +93,7 @@ public class JobService {
     }
 
     public Job extendJobRecruitmentTerm(Long jobId,
-                                        UserCredential userCredential){
+                                        UserCredential userCredential) {
         User authUser = userCredential.getUser();
         Job job = findJobById(jobId);
         Company company = findCompanyByJob(job);
@@ -94,7 +105,7 @@ public class JobService {
 
     // Delete all jobs and applications of that job that were expired 90 days ago
     @Scheduled(cron = "0 0 0 * * *")
-    public void deleteAllExpiredJobsAndApplications(){
+    public void deleteAllExpiredJobsAndApplications() {
         jobRepository.findAll().stream()
                 .filter(job -> !job.getIsActive())
                 .filter(job -> job.getExpiresAt().isBefore(LocalDateTime.now().minusDays(90).truncatedTo(ChronoUnit.SECONDS)))
@@ -115,8 +126,46 @@ public class JobService {
         jobRepository.delete(job);
     }
 
-    public boolean isExpired(Job job){
+    public boolean isExpired(Job job) {
         return job.getIsActive() && job.getExpiresAt().isBefore(LocalDateTime.now());
+    }
+
+    // Generate page with filtered by filter jobs and keywords
+    private PageImpl<Job> generateResultPage(int pageNumber, String keyword, JobFilterFields jobFilterFields, Sort sort) {
+        Pageable pageable = PageRequest.of(pageNumber - 1, 3, sort);
+        List<Job> allJobs = getJobsByFilters(jobFilterFields);
+        Page<Job> all;
+
+        if(keyword!=null){
+             all = jobRepository.findAll(keyword, pageable);
+        } else {
+            all = jobRepository.findAll(pageable);
+        }
+
+        List<Job> content = all.getContent();
+        List<Job> filteredJobs = allJobs.stream()
+                .filter(job -> content.stream().anyMatch(c -> c.getId().equals(job.getId())))
+                .toList();
+        log.info("pageable.getPageSize() = " + pageable.getPageSize());
+        log.info("pageable.getPageNumber() = " + pageable.getPageNumber());
+        log.info("pageable.getSort() = " + pageable.getSort());
+        return new PageImpl<>(filteredJobs, pageable, allJobs.size());
+    }
+
+    private List<Job> getJobsByFilters(JobFilterFields jobFilterFields) {
+        if(jobFilterFields!=null){
+            Specification<Job> jobSpecification = JobSpec.getSpec(
+                    jobFilterFields.getCreatedAfterDaysAgo(),
+                    jobFilterFields.getCountry(),
+                    jobFilterFields.getCity(),
+                    jobFilterFields.getJobType(),
+                    jobFilterFields.getRole(),
+                    jobFilterFields.getWorkType()
+            );
+            return jobRepository.findAll(jobSpecification);
+        } else {
+            return jobRepository.findAll();
+        }
     }
 
     // Check if user has next permissions:
@@ -125,9 +174,9 @@ public class JobService {
     //         * heads company
     // Otherwise, throws NoPermissionException
     private void checkPermission(User authUser, Company company) {
-        if(!company.getOwner().equals(authUser)
+        if (!company.getOwner().equals(authUser)
                 && !company.getHeads().contains(authUser)
-                && !company.getHiringTeam().contains(authUser)){
+                && !company.getHiringTeam().contains(authUser)) {
             throw new NoPermissionException("No permission");
         }
     }

@@ -1,11 +1,10 @@
 package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
-import com.olekhv.job.search.auth.userCredential.UserCredentialRepository;
+import com.olekhv.job.search.entity.certificate.Certificate;
 import com.olekhv.job.search.entity.user.User;
-import com.olekhv.job.search.exception.NotFoundException;
+import com.olekhv.job.search.entity.workExperience.WorkExperience;
 import com.olekhv.job.search.repository.UserRepository;
-import com.olekhv.job.search.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,23 +14,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
 @SpringBootTest
-class UserServiceTest {
+class CertificateServiceTest {
     @InjectMocks
-    private UserService userService;
+    private CertificateService certificateService;
 
     @Mock
     private UserRepository userRepository;
-
-    @Mock
-    private UserCredentialRepository userCredentialRepository;
 
     @Mock
     private User user;
@@ -39,23 +32,25 @@ class UserServiceTest {
     @Mock
     private UserCredential userCredential;
 
+    @Mock
+    private Certificate certificate;
+
     @BeforeEach
     void setUp() {
+        when(user.getCertificates()).thenReturn(new ArrayList<>());
         when(userCredential.getUser()).thenReturn(user);
-        when(userCredentialRepository.findByEmail("testEmail@gmail.com")).thenReturn(Optional.of(userCredential));
     }
 
     @Test
-    void should_edit_user_information() {
+    public void should_add_new_education_for_user () {
         // Given
-        User editedUser = new User();
-        editedUser.setFirstName("ChangedName");
+        // setUp()
 
         // When
-        userService.editInformation(editedUser, userCredential);
+        certificateService.addNewCertificate(certificate, userCredential);
 
         // Then
-        verify(user, times(1)).setFirstName("ChangedName");
         verify(userRepository, times(1)).save(user);
+        assertThat(user.getCertificates().contains(certificate)).isTrue();
     }
 }

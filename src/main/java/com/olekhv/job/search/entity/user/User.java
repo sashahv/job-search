@@ -88,7 +88,7 @@ public class User {
     private List<UserLanguage> languages = new ArrayList<>();
 
     @JsonBackReference
-    @OneToMany(cascade = {CascadeType.DETACH, CascadeType.PERSIST}, fetch = FetchType.EAGER)
+    @OneToMany(cascade = {CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_connections",
             joinColumns = @JoinColumn(name = "user_id"),

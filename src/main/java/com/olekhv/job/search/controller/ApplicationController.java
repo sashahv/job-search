@@ -1,10 +1,8 @@
 package com.olekhv.job.search.controller;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
-import com.olekhv.job.search.dataobjects.EmailDO;
 import com.olekhv.job.search.entity.application.Application;
 import com.olekhv.job.search.entity.application.Attachment;
-import com.olekhv.job.search.repository.ApplicationRepository;
 import com.olekhv.job.search.service.ApplicationService;
 import com.olekhv.job.search.utils.AttachmentUtils;
 import lombok.RequiredArgsConstructor;
@@ -54,9 +52,9 @@ public class ApplicationController {
     }
 
     @PostMapping("/{applicationId}/decline")
-    public ResponseEntity<Application> declineApplication(@PathVariable Long applicationId,
-                                                          @RequestBody(required = false) EmailDO emailDO,
+    public ResponseEntity<String> declineApplication(@PathVariable Long applicationId,
                                                           @AuthenticationPrincipal UserCredential userCredential){
-        return ResponseEntity.ok(applicationService.declineApplication(applicationId, emailDO, userCredential));
+        applicationService.declineApplication(applicationId, userCredential);
+        return ResponseEntity.ok("Application " + applicationId + " declined");
     }
 }

@@ -1,13 +1,11 @@
 package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
-import com.olekhv.job.search.dataobjects.JobDO;
-import com.olekhv.job.search.entity.application.Application;
+import com.olekhv.job.search.dataobject.JobDO;
 import com.olekhv.job.search.entity.company.Company;
 import com.olekhv.job.search.entity.job.Job;
 import com.olekhv.job.search.entity.user.User;
 import com.olekhv.job.search.exception.NoPermissionException;
-import com.olekhv.job.search.repository.ApplicationRepository;
 import com.olekhv.job.search.repository.CompanyRepository;
 import com.olekhv.job.search.repository.JobRepository;
 import com.olekhv.job.search.repository.UserRepository;
@@ -48,8 +46,6 @@ class JobServiceTest {
     private CompanyRepository companyRepository;
     @Mock
     private UserRepository userRepository;
-    @Mock
-    private ApplicationRepository applicationRepository;
 
     @BeforeEach
     void setUp() {
@@ -119,16 +115,17 @@ class JobServiceTest {
         LocalDateTime twoMonthsAgo = LocalDateTime.now().minusDays(60).truncatedTo(ChronoUnit.SECONDS);
         LocalDateTime oneMonthLater = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
         List<Job> jobs = new ArrayList<>(List.of(
-                Job.builder().isActive(false).expiresAt(threeMonthsAgo).applications(new ArrayList<>()).build(),
-                Job.builder().isActive(false).expiresAt(twoMonthsAgo).applications(new ArrayList<>()).build(),
-                Job.builder().isActive(true).expiresAt(oneMonthLater).applications(new ArrayList<>()).build()
+                Job.builder().id(1L).isActive(false).expiresAt(threeMonthsAgo).applications(new ArrayList<>()).build(),
+                Job.builder().id(2L).isActive(false).expiresAt(twoMonthsAgo).applications(new ArrayList<>()).build(),
+                Job.builder().id(3L).isActive(true).expiresAt(oneMonthLater).applications(new ArrayList<>()).build()
         ));
         when(jobRepository.findAll()).thenReturn(jobs);
+        when(userRepository.findBySavedJobsIsContaining(any(Job.class))).thenReturn(Optional.of(user));
+        when(companyRepository.findByJobsIsContaining(any(Job.class))).thenReturn(Optional.of(company));
 
         jobService.deleteAllExpiredJobsAndApplications();
 
         verify(jobRepository, times(1)).delete(any(Job.class));
-        verify(applicationRepository, times(1)).deleteAll(new ArrayList<>());
     }
 
     @Test

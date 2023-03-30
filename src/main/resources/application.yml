@@ -19,8 +19,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: // email
-    password: // password
+    username: *******************
+    password: **************
     protocol: smtp
     properties:
       mail:
@@ -29,3 +29,21 @@ spring:
           starttls:
             enable: true
           debug: true
+yaml:
+  email:
+      applied:
+        subject: "Your application was sent to {COMPANY_NAME}"
+        body: "Dear {NAME}, 
+        \r\n\r\nYour application for {POSITION} position was successfully sent to {COMPANY_NAME}"
+      viewed:
+        subject: "Your application was viewed by {COMPANY_NAME}"
+        body: "Dear {NAME},
+        \r\n\r\nWe're inform you that your application for {POSITION} position was view by {COMPANY_NAME}"
+      declined:
+        subject: "Your application was declined by {COMPANY_NAME}"
+        body: "Dear {NAME},
+        \r\n\r\nWe're regret to inform you that your application for {POSITION} position was declined by {COMPANY_NAME}"
+      considered:
+        subject: "Consideration of the candidature - {COMPANY_NAME}"
+        body: "Dear {NAME},
+        \r\n\r\nWe inform you that {COMPANY_NAME} is considered on your candidature for {POSITION} position"

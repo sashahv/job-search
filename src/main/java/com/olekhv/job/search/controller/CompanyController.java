@@ -1,11 +1,9 @@
 package com.olekhv.job.search.controller;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
-import com.olekhv.job.search.dataobjects.JobDO;
 import com.olekhv.job.search.entity.company.Company;
-import com.olekhv.job.search.entity.job.Job;
 import com.olekhv.job.search.entity.user.User;
-import com.olekhv.job.search.dataobjects.CompanyDO;
+import com.olekhv.job.search.dataobject.CompanyDO;
 import com.olekhv.job.search.service.CompanyService;
 import com.olekhv.job.search.service.JobService;
 import lombok.RequiredArgsConstructor;

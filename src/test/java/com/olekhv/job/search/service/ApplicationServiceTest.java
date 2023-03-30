@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 @SpringBootTest
 class ApplicationServiceTest {
     @InjectMocks private ApplicationService applicationService;
-
+    @Mock private JobService jobService;
     @Mock private User user;
     @Mock private UserCredential userCredential;
     @Mock private AttachmentRepository attachmentRepository;
@@ -42,6 +42,7 @@ class ApplicationServiceTest {
     @Mock private ApplicationRepository applicationRepository;
     @Mock private Application application;
     @Mock private Attachment attachment;
+    @Mock private EmailSenderService emailSenderService;
 
     @BeforeEach
     void setUp() {
@@ -113,6 +114,8 @@ class ApplicationServiceTest {
         MultipartFile file2 = new MockMultipartFile("file2", new byte[0]);
         List<MultipartFile> multipartFiles = Arrays.asList(file1, file2);
         when(job.getApplications()).thenReturn(new ArrayList<>());
+        when(applicationRepository.findById(any(Long.class))).thenReturn(Optional.of(new Application()));
+        when(companyRepository.findByJobsIsContaining(any(Job.class))).thenReturn(Optional.of(company));
 
         // When
         Application application = applicationService.createNewApplication(userCredential, 1L, multipartFiles);
@@ -125,6 +128,13 @@ class ApplicationServiceTest {
         assertTrue(job.getApplications().contains(application));
         verify(jobRepository, times(1)).save(job);
         verify(attachmentRepository, times(1)).saveAll(application.getAttachments());
+    }
+
+    @Test
+    void should_throw_exception_if_create_job_and_job_proposition_is_expired(){
+        when(job.getIsActive() && job.getExpiresAt().isBefore(LocalDateTime.now())).thenReturn(true);
+        assertThrows(RuntimeException.class, () ->
+                applicationService.createNewApplication(userCredential, 1L, null));
     }
 
     // If user has next permissions:
@@ -181,7 +191,7 @@ class ApplicationServiceTest {
         when(company.getHiringTeam()).thenReturn(new ArrayList<>(Collections.singletonList(user)));
 
         // When
-        applicationService.changeApplicationStatus(1L, ApplicationStatus.CONSIDERED, userCredential);
+        applicationService.changeApplicationStatus(newApplication, ApplicationStatus.CONSIDERED, userCredential);
 
         // Then
         assertEquals(ApplicationStatus.CONSIDERED, newApplication.getStatus());
@@ -199,7 +209,7 @@ class ApplicationServiceTest {
         when(company.getHiringTeam()).thenReturn(new ArrayList<>(Collections.singletonList(user)));
 
         // When
-        applicationService.declineApplication(1L, null, userCredential);
+        applicationService.declineApplication(1L, userCredential);
 
         // Then
         assertEquals(ApplicationStatus.DECLINED, newApplication.getStatus());

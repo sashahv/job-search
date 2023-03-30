@@ -1,7 +1,6 @@
 package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
-import com.olekhv.job.search.dataobjects.EmailDO;
 import com.olekhv.job.search.entity.application.Application;
 import com.olekhv.job.search.entity.application.ApplicationStatus;
 import com.olekhv.job.search.entity.application.Attachment;
@@ -21,6 +20,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.beans.Transient;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -44,6 +44,7 @@ public class ApplicationService {
                                             List<MultipartFile> multipartFiles) {
         User authUser = userCredential.getUser();
         Job job = findJobById(jobId);
+        Company company = findCompanyByJob(job);
 
         if(jobService.isExpired(job)){
             throw new RuntimeException("Job proposition is expired");
@@ -51,11 +52,14 @@ public class ApplicationService {
 
         Application application = new Application();
         application.setCreatedAt(LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS));
-        application.setStatus(ApplicationStatus.APPLIED);
         application.setOwner(authUser);
+        ApplicationStatus appliedStatus = ApplicationStatus.APPLIED;
+        application.setStatus(appliedStatus);
         saveAttachmentsForApplication(multipartFiles, application);
+        applicationRepository.save(application);
         job.getApplications().add(application);
         jobRepository.save(job);
+        emailSenderService.sendEmail(appliedStatus, userCredential, job, company);
         return application;
     }
 
@@ -100,32 +104,28 @@ public class ApplicationService {
         return attachment;
     }
 
-    public Application changeApplicationStatus(Long applicationId,
+    public Application changeApplicationStatus(Application application,
                                                ApplicationStatus applicationStatus,
                                                UserCredential userCredential){
         User authUser = userCredential.getUser();
-        Application application = findApplicationById(applicationId);
         Job job = findJobByApplication(application);
         Company company = findCompanyByJob(job);
         checkPermission(authUser, company);
         application.setStatus(applicationStatus);
+        emailSenderService.sendEmail(applicationStatus, userCredential, job, company);
         applicationRepository.save(application);
         return application;
     }
 
-    public Application declineApplication(Long applicationId,
-                                 EmailDO emailDO,
+    @Transient
+    public void declineApplication(Long applicationId,
                                  UserCredential userCredential){
         User authUser = userCredential.getUser();
         Application application = findApplicationById(applicationId);
         Job job = findJobByApplication(application);
         Company company = findCompanyByJob(job);
         checkPermission(authUser, company);
-        if(emailDO!=null){
-            emailDO.setToEmail(application.getOwner().getContactEmail());
-            emailSenderService.sendEmail(emailDO);
-        }
-        return changeApplicationStatus(applicationId, ApplicationStatus.DECLINED, userCredential);
+        changeApplicationStatus(application, ApplicationStatus.DECLINED, userCredential);
     }
 
     // Deletes declined and closed applications if they exist one month

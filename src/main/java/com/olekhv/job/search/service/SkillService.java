@@ -43,7 +43,7 @@ public class SkillService {
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .filter(skill -> !userSkills.contains(skill))
-                .collect(Collectors.toList()));
+                .toList());
         userRepository.save(authUser);
         return userSkills;
     }
