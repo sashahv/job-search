@@ -11,7 +11,7 @@ This project is a job-search web application that allows users to find and apply
 - Spring Data JPA
 - JSON Web Tokens (JWT)
 - PayPal REST API
-- Email sender
+- EmailSender
 - Maven
 - Hibernate
 - Lombok
