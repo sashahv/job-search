@@ -1,6 +1,7 @@
 package com.olekhv.job.search.entity.user;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.olekhv.job.search.entity.application.Attachment;
 import com.olekhv.job.search.entity.certificate.Certificate;
 import com.olekhv.job.search.entity.education.Education;
 import com.olekhv.job.search.entity.job.Job;
@@ -103,6 +104,10 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "job_id")
     )
     private List<Job> savedJobs = new ArrayList<>();
+
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "default_resume")
+    private Attachment defaultResume;
 
     @Override
     public String toString() {

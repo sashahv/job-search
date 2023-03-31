@@ -1,6 +1,7 @@
 package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
+import com.olekhv.job.search.datatransferobject.JobResponse;
 import com.olekhv.job.search.entity.company.Company;
 import com.olekhv.job.search.entity.job.Job;
 import com.olekhv.job.search.dataobject.JobDO;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -32,7 +34,7 @@ public class JobService {
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
 
-    public Page<Job> listAllJobs(Integer pageNumber,
+    public Page<JobResponse> listAllJobs(Integer pageNumber,
                                  String sortField,
                                  String sortDirection,
                                  String keyword,
@@ -41,7 +43,7 @@ public class JobService {
         Sort sort = Sort.by(sortField);
         sort = sortDirection.equals("asc") ? sort.ascending() : sort.descending();
 
-        return generateResultPage(pageNumber, keyword, jobFilterFields, sort);
+        return generateJobPage(pageNumber, keyword, jobFilterFields, sort);
     }
 
     public Job createNewJob(JobDO jobDO,
@@ -130,26 +132,40 @@ public class JobService {
         return job.getIsActive() && job.getExpiresAt().isBefore(LocalDateTime.now());
     }
 
-    // Generate page with filtered by filter jobs and keywords
-    private PageImpl<Job> generateResultPage(int pageNumber, String keyword, JobFilterFields jobFilterFields, Sort sort) {
-        Pageable pageable = PageRequest.of(pageNumber - 1, 3, sort);
-        List<Job> allJobs = getJobsByFilters(jobFilterFields);
-        Page<Job> all;
+    // Generate page with filtered jobs
+    private PageImpl<JobResponse> generateJobPage(int pageNumber, String keyword, JobFilterFields jobFilterFields, Sort sort) {
+        Pageable pageable = PageRequest.of(pageNumber - 1, 1, sort);
 
-        if(keyword!=null){
-             all = jobRepository.findAll(keyword, pageable);
-        } else {
-            all = jobRepository.findAll(pageable);
-        }
+        List<Job> jobs = generateJobList(keyword, jobFilterFields, pageable);
 
-        List<Job> content = all.getContent();
-        List<Job> filteredJobs = allJobs.stream()
-                .filter(job -> content.stream().anyMatch(c -> c.getId().equals(job.getId())))
+        List<JobResponse> jobResponses = jobs
+                .stream()
+                .skip(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .map(JobResponse::new)
                 .toList();
-        log.info("pageable.getPageSize() = " + pageable.getPageSize());
-        log.info("pageable.getPageNumber() = " + pageable.getPageNumber());
-        log.info("pageable.getSort() = " + pageable.getSort());
-        return new PageImpl<>(filteredJobs, pageable, allJobs.size());
+        return new PageImpl<>(jobResponses, pageable, jobResponses.size());
+    }
+
+    // Generate list of jobs by filters
+    private List<Job> generateJobList(String keyword, JobFilterFields jobFilterFields, Pageable pageable) {
+        List<Job> jobs;
+        if (keyword != null) {
+            List<Job> jobsByKeyword = jobRepository.findAll(keyword);
+            if (jobFilterFields != null) {
+                jobs = getJobsByFilters(jobFilterFields)
+                        .stream()
+                        .filter(jobsByKeyword::contains)
+                        .toList();
+            } else {
+                jobs = jobsByKeyword;
+            }
+        } else if (jobFilterFields != null) {
+            jobs = getJobsByFilters(jobFilterFields);
+        } else {
+            jobs = jobRepository.findAll(pageable).getContent();
+        }
+        return jobs;
     }
 
     private List<Job> getJobsByFilters(JobFilterFields jobFilterFields) {

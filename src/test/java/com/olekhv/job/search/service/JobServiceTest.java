@@ -2,25 +2,29 @@ package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
 import com.olekhv.job.search.dataobject.JobDO;
+import com.olekhv.job.search.datatransferobject.JobResponse;
 import com.olekhv.job.search.entity.company.Company;
 import com.olekhv.job.search.entity.job.Job;
+import com.olekhv.job.search.entity.job.JobFilterFields;
 import com.olekhv.job.search.entity.user.User;
 import com.olekhv.job.search.exception.NoPermissionException;
 import com.olekhv.job.search.repository.CompanyRepository;
 import com.olekhv.job.search.repository.JobRepository;
 import com.olekhv.job.search.repository.UserRepository;
+import org.hibernate.internal.util.collections.JoinedList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -165,5 +169,73 @@ class JobServiceTest {
         // Then
         verify(userRepository, times(1)).save(user);
         assertEquals(0, user.getSavedJobs().size());
+    }
+
+    @Test
+    void should_return_page_with_size_1_and_one_job_by_keyword_and_specification() {
+        // Given
+        Integer pageNumber = 1;
+        String sortField = "title";
+        String sortDirection = "asc";
+        String keyword = "developer";
+        JobFilterFields jobFilterFields = new JobFilterFields();
+
+        List<Job> jobs = Arrays.asList(
+                new Job(),
+                new Job()
+        );
+
+        when(jobRepository.findAll(keyword)).thenReturn(jobs);
+        when(jobRepository.findAll(any(Specification.class))).thenReturn(jobs);
+
+        // When
+        Page<JobResponse> jobResponses = jobService.listAllJobs(pageNumber, sortField, sortDirection, keyword, jobFilterFields);
+
+        // Then
+        verify(jobRepository,times(1)).findAll(keyword);
+        verify(jobRepository,times(1)).findAll(any(Specification.class));
+        assertEquals(1, jobResponses.getTotalElements());
+    }
+
+    @Test
+    void should_return_page_with_size_1_and_job_by_keyword() {
+        // Given
+        Integer pageNumber = 1;
+        String sortField = "title";
+        String sortDirection = "asc";
+        String keyword = "developer";
+        List<Job> jobs = new ArrayList<>(Collections.singleton(new Job()));
+
+        when(jobRepository.findAll(keyword)).thenReturn(jobs);
+
+        // When
+        Page<JobResponse> jobResponses = jobService.listAllJobs(pageNumber, sortField, sortDirection, keyword, null);
+
+        // Then
+        verify(jobRepository,times(1)).findAll(keyword);
+        verify(jobRepository,times(0)).findAll(any(Specification.class));
+        assertEquals(1, jobResponses.getTotalElements());
+    }
+
+    @Test
+    void should_return_page_with_size_1_and_job_without_filters() {
+        // Given
+        Integer pageNumber = 1;
+        String sortField = "title";
+        String sortDirection = "asc";
+        String keyword = "developer";
+
+        when(jobRepository.findAll(any(Pageable.class)))
+                .thenReturn(new PageImpl<>(new ArrayList<>(Collections.singletonList(new Job()))));
+
+        // When
+        Page<JobResponse> jobResponses =
+                jobService.listAllJobs(pageNumber, sortField, sortDirection, null, null);
+
+        // Then
+        verify(jobRepository,times(0)).findAll(keyword);
+        verify(jobRepository,times(1)).findAll(any(Pageable.class));
+        verify(jobRepository,times(0)).findAll(any(Specification.class));
+        assertEquals(1, jobResponses.getTotalElements());
     }
 }

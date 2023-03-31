@@ -37,6 +37,7 @@ public class Job {
     private String country;
     @Column(name = "city", length = 60, nullable = false)
     private String city;
+    @Enumerated(EnumType.STRING)
     @Column(name = "type", length = 20)
     private JobType type;
     @Column(name = "role", length = 20, nullable = false)

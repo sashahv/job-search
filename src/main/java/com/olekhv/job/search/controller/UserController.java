@@ -1,6 +1,7 @@
 package com.olekhv.job.search.controller;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
+import com.olekhv.job.search.datatransferobject.UserResponse;
 import com.olekhv.job.search.entity.language.Language;
 import com.olekhv.job.search.entity.user.User;
 import com.olekhv.job.search.service.UserService;
@@ -16,6 +17,11 @@ import java.util.List;
 @RequestMapping("/api/v1/users")
 public class UserController {
     private final UserService userService;
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserResponse> fetchUserById(@PathVariable Long userId){
+        return ResponseEntity.ok(userService.fetchUserById(userId));
+    }
 
     @PutMapping("user/edit")
     public ResponseEntity<User> editInformation(@RequestBody User providedUser,

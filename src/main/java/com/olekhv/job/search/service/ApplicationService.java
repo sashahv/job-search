@@ -104,9 +104,9 @@ public class ApplicationService {
         return attachment;
     }
 
-    public Application changeApplicationStatus(Application application,
-                                               ApplicationStatus applicationStatus,
-                                               UserCredential userCredential){
+    public void changeApplicationStatus(Application application,
+                                        ApplicationStatus applicationStatus,
+                                        UserCredential userCredential){
         User authUser = userCredential.getUser();
         Job job = findJobByApplication(application);
         Company company = findCompanyByJob(job);
@@ -114,7 +114,6 @@ public class ApplicationService {
         application.setStatus(applicationStatus);
         emailSenderService.sendEmail(applicationStatus, userCredential, job, company);
         applicationRepository.save(application);
-        return application;
     }
 
     @Transient

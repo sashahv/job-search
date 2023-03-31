@@ -3,7 +3,10 @@ package com.olekhv.job.search.specification;
 import com.olekhv.job.search.entity.job.Job;
 import com.olekhv.job.search.entity.job.JobType;
 import com.olekhv.job.search.entity.job.WorkType;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
+import org.hibernate.jdbc.Work;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDate;
@@ -31,7 +34,7 @@ public class JobSpec {
                predicates.add(criteriaBuilder.equal(root.get("city"), city));
            }
             if(jobType != null){
-                predicates.add(criteriaBuilder.equal(root.get("jobType"), jobType));
+                predicates.add(criteriaBuilder.equal(root.get("type"), jobType));
             }
             if(role != null && !role.isEmpty()){
                 predicates.add(criteriaBuilder.like(root.get("role"), "%" + role + "%"));

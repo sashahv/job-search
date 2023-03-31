@@ -20,7 +20,7 @@ public interface JobRepository extends JpaRepository<Job, Long> {
     @Query("SELECT j " +
             "FROM Job j " +
             "WHERE CONCAT(j.title, ' ', j.description, ' ', j.role) LIKE %?1%")
-    Page<Job> findAll(String keyword, Pageable pageable);
+    List<Job> findAll(String keyword);
 
     List<Job> findAll(Specification<Job> specification);
 }
