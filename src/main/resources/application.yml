@@ -19,8 +19,8 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: //email here
-    password: //password here
+    username: // email
+    password: // password
     protocol: smtp
     properties:
       mail:
@@ -29,6 +29,11 @@ spring:
           starttls:
             enable: true
           debug: true
+paypal:
+  mode: sandbox
+  client:
+    id: // client_id
+    secret: // client_secret
 yaml:
   email:
       applied:

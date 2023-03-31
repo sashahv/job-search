@@ -1,9 +1,11 @@
 package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
+import com.olekhv.job.search.auth.userCredential.UserCredentialRepository;
 import com.olekhv.job.search.datatransferobject.UserResponse;
 import com.olekhv.job.search.entity.application.Attachment;
 import com.olekhv.job.search.entity.user.User;
+import com.olekhv.job.search.entity.user.UserRole;
 import com.olekhv.job.search.repository.AttachmentRepository;
 import com.olekhv.job.search.repository.UserRepository;
 import com.olekhv.job.search.utils.AttachmentUtils;
@@ -22,6 +24,7 @@ import java.io.IOException;
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
+    private final UserCredentialRepository userCredentialRepository;
     private final AttachmentRepository attachmentRepository;
     private final UserRepository userRepository;
 
@@ -61,5 +64,10 @@ public class UserService {
         authUser.setDefaultResume(attachment);
         userRepository.save(authUser);
         return attachment;
+    }
+
+    public User upgradeToPremium(UserCredential userCredential){
+        userCredential.setRole(UserRole.PREMIUM_USER);
+        return userCredentialRepository.save(userCredential).getUser();
     }
 }

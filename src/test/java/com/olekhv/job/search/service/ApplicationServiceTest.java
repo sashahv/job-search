@@ -49,7 +49,7 @@ class ApplicationServiceTest {
         when(jobRepository.findById(1L)).thenReturn(Optional.of(job));
         when(userCredential.getUser()).thenReturn(user);
         when(company.getOwner()).thenReturn(new User());
-        when(application.getOwner()).thenReturn(new User());
+        when(application.getOwner()).thenReturn(user);
     }
 
     // If user belongs to hiring team he should be able to look at application by provide id.
@@ -102,6 +102,7 @@ class ApplicationServiceTest {
         when(applicationRepository.findById(any(Long.class))).thenReturn(Optional.of(application));
         when(jobRepository.findByApplicationsContaining(application)).thenReturn(Optional.of(job));
         when(companyRepository.findByJobsIsContaining(job)).thenReturn(Optional.of(company));
+        when(application.getOwner()).thenReturn(user);
         assertThrows(NoPermissionException.class, () ->
                 applicationService.getApplicationById(1L, new UserCredential()));
     }
@@ -144,10 +145,10 @@ class ApplicationServiceTest {
     // he should be able to list all applications:
     @Test
     void should_list_all_applications_if_have_permission(){
-        // Given
-        when(job.getApplications()).thenReturn(new ArrayList<>(Collections.singletonList(new Application())));
         when(companyRepository.findByJobsIsContaining(job)).thenReturn(Optional.of(company));
         when(company.getOwner()).thenReturn(user);
+        when(job.getApplications()).thenReturn(Collections.singletonList(application));
+        when(application.getOwner()).thenReturn(user);
 
         // When
         List<Application> applications = applicationService.listAllApplications(1L, userCredential);

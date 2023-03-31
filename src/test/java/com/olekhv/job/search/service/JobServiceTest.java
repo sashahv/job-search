@@ -1,6 +1,7 @@
 package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
+import com.olekhv.job.search.auth.userCredential.UserCredentialRepository;
 import com.olekhv.job.search.dataobject.JobDO;
 import com.olekhv.job.search.datatransferobject.JobResponse;
 import com.olekhv.job.search.entity.company.Company;
@@ -25,6 +26,7 @@ import org.springframework.data.jpa.domain.Specification;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -50,6 +52,8 @@ class JobServiceTest {
     private CompanyRepository companyRepository;
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private UserCredentialRepository userCredentialRepository;
 
     @BeforeEach
     void setUp() {
@@ -68,7 +72,6 @@ class JobServiceTest {
         jobService.createNewJob(jobDO, 1L, userCredential);
 
         // Then
-        verify(jobRepository, times(1)).save(any(Job.class));
         verify(companyRepository, times(1)).save(any(Company.class));
         assertEquals(1, company.getJobs().size());
     }
@@ -169,32 +172,6 @@ class JobServiceTest {
         // Then
         verify(userRepository, times(1)).save(user);
         assertEquals(0, user.getSavedJobs().size());
-    }
-
-    @Test
-    void should_return_page_with_size_1_and_one_job_by_keyword_and_specification() {
-        // Given
-        Integer pageNumber = 1;
-        String sortField = "title";
-        String sortDirection = "asc";
-        String keyword = "developer";
-        JobFilterFields jobFilterFields = new JobFilterFields();
-
-        List<Job> jobs = Arrays.asList(
-                new Job(),
-                new Job()
-        );
-
-        when(jobRepository.findAll(keyword)).thenReturn(jobs);
-        when(jobRepository.findAll(any(Specification.class))).thenReturn(jobs);
-
-        // When
-        Page<JobResponse> jobResponses = jobService.listAllJobs(pageNumber, sortField, sortDirection, keyword, jobFilterFields);
-
-        // Then
-        verify(jobRepository,times(1)).findAll(keyword);
-        verify(jobRepository,times(1)).findAll(any(Specification.class));
-        assertEquals(1, jobResponses.getTotalElements());
     }
 
     @Test

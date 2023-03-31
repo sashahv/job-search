@@ -1,6 +1,7 @@
 package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
+import com.olekhv.job.search.auth.userCredential.UserCredentialRepository;
 import com.olekhv.job.search.datatransferobject.JobResponse;
 import com.olekhv.job.search.entity.company.Company;
 import com.olekhv.job.search.entity.job.Job;
@@ -19,17 +20,19 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class JobService {
+    private final UserCredentialRepository userCredentialRepository;
     private final CompanyRepository companyRepository;
     private final JobRepository jobRepository;
     private final UserRepository userRepository;
@@ -55,7 +58,6 @@ public class JobService {
         Job job = buildJob(jobDO);
         company.getJobs().add(job);
         companyRepository.save(company);
-        jobRepository.save(job);
         return job;
     }
 
@@ -133,7 +135,7 @@ public class JobService {
     }
 
     // Generate page with filtered jobs
-    private PageImpl<JobResponse> generateJobPage(int pageNumber, String keyword, JobFilterFields jobFilterFields, Sort sort) {
+    PageImpl<JobResponse> generateJobPage(int pageNumber, String keyword, JobFilterFields jobFilterFields, Sort sort) {
         Pageable pageable = PageRequest.of(pageNumber - 1, 1, sort);
 
         List<Job> jobs = generateJobList(keyword, jobFilterFields, pageable);
@@ -148,7 +150,7 @@ public class JobService {
     }
 
     // Generate list of jobs by filters
-    private List<Job> generateJobList(String keyword, JobFilterFields jobFilterFields, Pageable pageable) {
+    List<Job> generateJobList(String keyword, JobFilterFields jobFilterFields, Pageable pageable) {
         List<Job> jobs;
         if (keyword != null) {
             List<Job> jobsByKeyword = jobRepository.findAll(keyword);
@@ -165,7 +167,11 @@ public class JobService {
         } else {
             jobs = jobRepository.findAll(pageable).getContent();
         }
-        return jobs;
+        return jobs.stream()
+                .sorted(Comparator.comparing(job ->
+                        findUserCredentialByUser(findCompanyByJob((Job) job)
+                                .getOwner()).getRole()).reversed())
+                .toList();
     }
 
     private List<Job> getJobsByFilters(JobFilterFields jobFilterFields) {
@@ -213,6 +219,12 @@ public class JobService {
                 .emptyVacancies(jobDO.getEmptyVacancies())
                 .requiredSkills(jobDO.getRequiredSkills())
                 .build();
+    }
+
+    private UserCredential findUserCredentialByUser(User user){
+        return userCredentialRepository.findByUser(user).orElseThrow(
+                () -> new UsernameNotFoundException("User credential not found")
+        );
     }
 
     private User findUserBySavedJob(Job job) {

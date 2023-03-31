@@ -1,5 +1,6 @@
 package com.olekhv.job.search.entity.application;
 
+import com.olekhv.job.search.auth.userCredential.UserCredential;
 import com.olekhv.job.search.entity.user.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

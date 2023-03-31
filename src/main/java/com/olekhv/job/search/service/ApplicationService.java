@@ -1,6 +1,7 @@
 package com.olekhv.job.search.service;
 
 import com.olekhv.job.search.auth.userCredential.UserCredential;
+import com.olekhv.job.search.auth.userCredential.UserCredentialRepository;
 import com.olekhv.job.search.entity.application.Application;
 import com.olekhv.job.search.entity.application.ApplicationStatus;
 import com.olekhv.job.search.entity.application.Attachment;
@@ -17,6 +18,7 @@ import com.olekhv.job.search.utils.AttachmentUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +26,7 @@ import java.beans.Transient;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -32,6 +35,7 @@ import java.util.stream.Stream;
 @Slf4j
 @RequiredArgsConstructor
 public class ApplicationService {
+    private final UserCredentialRepository userCredentialRepository;
     private final JobRepository jobRepository;
     private final ApplicationRepository applicationRepository;
     private final AttachmentRepository attachmentRepository;
@@ -46,7 +50,7 @@ public class ApplicationService {
         Job job = findJobById(jobId);
         Company company = findCompanyByJob(job);
 
-        if(jobService.isExpired(job)){
+        if (jobService.isExpired(job)) {
             throw new RuntimeException("Job proposition is expired");
         }
 
@@ -69,21 +73,24 @@ public class ApplicationService {
     //         * heads company
     // he can check all applications for certain job
     public List<Application> listAllApplications(Long jobId,
-                                                 UserCredential userCredential){
+                                                 UserCredential userCredential) {
         User authUser = userCredential.getUser();
         Job job = findJobById(jobId);
         Company company = findCompanyByJob(job);
         checkPermission(authUser, company);
-        return job.getApplications();
+        return job.getApplications().stream()
+                .sorted(Comparator.comparing((Application a) -> findUserCredentialByUser(a.getOwner()).getRole()).reversed()
+                        .thenComparing(Application::getId).reversed())
+                .toList();
     }
 
     public Application getApplicationById(Long applicationId,
-                                            UserCredential userCredential){
+                                          UserCredential userCredential) {
         User authUser = userCredential.getUser();
         Application application = findApplicationById(applicationId);
         Job job = findJobByApplication(application);
         Company company = findCompanyByJob(job);
-        if(!application.getOwner().equals(authUser)){
+        if (!application.getOwner().equals(authUser)) {
             checkPermission(authUser, company);
             application.setStatus(ApplicationStatus.VIEWED);
             applicationRepository.save(application);
@@ -92,13 +99,13 @@ public class ApplicationService {
     }
 
     public Attachment getAttachmentById(Long attachmentId,
-                                          UserCredential userCredential) {
+                                        UserCredential userCredential) {
         User authUser = userCredential.getUser();
         Attachment attachment = getAttachmentById(attachmentId);
         Application application = findApplicationByAttachment(attachment);
         Job job = findJobByApplication(application);
         Company company = findCompanyByJob(job);
-        if(!attachment.getOwner().equals(authUser)){
+        if (!attachment.getOwner().equals(authUser)) {
             checkPermission(authUser, company);
         }
         return attachment;
@@ -106,7 +113,7 @@ public class ApplicationService {
 
     public void changeApplicationStatus(Application application,
                                         ApplicationStatus applicationStatus,
-                                        UserCredential userCredential){
+                                        UserCredential userCredential) {
         User authUser = userCredential.getUser();
         Job job = findJobByApplication(application);
         Company company = findCompanyByJob(job);
@@ -118,7 +125,7 @@ public class ApplicationService {
 
     @Transient
     public void declineApplication(Long applicationId,
-                                 UserCredential userCredential){
+                                   UserCredential userCredential) {
         User authUser = userCredential.getUser();
         Application application = findApplicationById(applicationId);
         Job job = findJobByApplication(application);
@@ -130,13 +137,13 @@ public class ApplicationService {
     // Deletes declined and closed applications if they exist one month
     // Checking is scheduled on 00:00 every day
     @Scheduled(cron = "0 0 0 * * *")
-    public void deleteInactiveApplications(){
+    public void deleteInactiveApplications() {
         LocalDateTime monthAgo = LocalDateTime.now().minusDays(30).truncatedTo(ChronoUnit.SECONDS);
         List<Application> applicationsToDelete = generateListOfInactiveApplications(monthAgo);
         applicationRepository.deleteAll(applicationsToDelete);
         applicationsToDelete.forEach(application -> attachmentRepository.deleteAll(application.getAttachments()));
     }
-    
+
     private List<Application> generateListOfInactiveApplications(LocalDateTime localDateTime) {
         List<Application> declinedApplications =
                 applicationRepository.findByStatusAndCreatedAtBefore(ApplicationStatus.DECLINED, localDateTime);
@@ -154,9 +161,9 @@ public class ApplicationService {
     //     * heads company
     // Otherwise, throws NoPermissionException
     private void checkPermission(User authUser, Company company) {
-        if(!company.getOwner().equals(authUser)
+        if (!company.getOwner().equals(authUser)
                 && !company.getHeads().contains(authUser)
-                && !company.getHiringTeam().contains(authUser)){
+                && !company.getHiringTeam().contains(authUser)) {
             throw new NoPermissionException("No permission");
         }
     }
@@ -184,6 +191,11 @@ public class ApplicationService {
                 () -> new NotFoundException("Attachment with id " + attachmentId + " not found")
         );
     }
+    private UserCredential findUserCredentialByUser(User user){
+        return userCredentialRepository.findByUser(user).orElseThrow(
+                () -> new UsernameNotFoundException("User credential not found")
+        );
+    }
 
     private Application findApplicationByAttachment(Attachment attachment) {
         return applicationRepository.findByAttachmentsContaining(attachment).orElseThrow(
@@ -199,8 +211,8 @@ public class ApplicationService {
 
     private Job findJobById(Long jobId) {
         return jobRepository.findById(jobId).orElseThrow(
-                    () -> new NotFoundException("Job with id " + jobId + " not found")
-            );
+                () -> new NotFoundException("Job with id " + jobId + " not found")
+        );
     }
 
     private Job findJobByApplication(Application application) {
