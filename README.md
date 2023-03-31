@@ -4,7 +4,7 @@
 This project is a job-search web application that allows users to find and apply for jobs while providing companies with a platform to post job openings and manage their hiring teams. The application is built using Spring and follows the RESTful architectural style.
 
 ## Features
-Authentication and Security
+### Authentication and Security
 The application implements JWT-based authentication and authorization to ensure that only authenticated users can access protected resources. Users can recover and change their passwords using the provided functionality.
 
 ### Company Management
