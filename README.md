@@ -1,7 +1,7 @@
 # Job-Search RESTful Spring Application
 
 ## Overview
-* This project is a job-search web application that allows users to find and apply for jobs while providing companies with a platform to post job openings and manage their hiring teams. The application is built using Spring and follows the RESTful architectural style.
+This project is a job-search web application that allows users to find and apply for jobs while providing companies with a platform to post job openings and manage their hiring teams. The application is built using Spring and follows the RESTful architectural style.
 
 ## Technologies used
 - Java 17
@@ -56,4 +56,4 @@
   5. Run the application using 'mvn spring-boot:run'
 
 ## Contact Information
-* If you have any questions or issues with the project, please feel free to reach out to the developer at s.hvozditskyi@gmail.com.
+If you have any questions or issues with the project, please feel free to reach out to the developer at s.hvozditskyi@gmail.com.
