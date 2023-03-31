@@ -5,7 +5,7 @@ This project is a job-search web application that allows users to find and apply
 
 ## Technologies used
 - Java 17
-- REST API
+- REST
 - Spring Boot 3.0.4
 - Spring Security
 - Spring Data JPA
