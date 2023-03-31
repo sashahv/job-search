@@ -54,7 +54,7 @@ This project is a job-search web application that allows users to find and apply
   2. Import the project into your IDE as a Maven project
   3. Set up a MySQL database
   4. Update the application.yml file with the appropriate database connection details and needed information (f.e. username and password for email sending and credentials for PayPal REST API)
-  5. Run the application using 'mvn spring-boot:run'
+  5. Run the application using `mvn spring-boot:run`
 
 ## Contact Information
 If you have any questions or issues with the project, please feel free to reach out to the developer at s.hvozditskyi@gmail.com.
