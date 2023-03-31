@@ -8,7 +8,7 @@ This project is a job-search web application that allows users to find and apply
 The application implements JWT-based authentication and authorization to ensure that only authenticated users can access protected resources. Users can recover and change their passwords using the provided functionality.
 
 ### Company Management
-Every user can create a new company and add a hiring team to it. This allows companies to manage their job postings and applications using a dedicated team.
+Every user can create a new company providing TaxID and add a hiring team to it. This allows companies to manage their job postings and applications using a dedicated team.
 
 ### Job Search and Application
 Users can find jobs by applying filters, view all available jobs, and apply for a chosen job by attaching their CV.
